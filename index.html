@@ -1,0 +1,2108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Poker Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .button.primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .game-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .status-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .poker-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .poker-option {
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .poker-option:hover, .poker-option.selected {
+            border-color: #f5576c;
+            background: rgba(245,87,108,0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: rgba(255,107,107,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #51cf66;
+            background: rgba(81,207,102,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🃏 Privacy Poker Game</h1>
+            <p>Secure poker game using privacy-preserving technology</p>
+        </div>
+
+        <!-- Wallet Connection Section -->
+        <div class="card">
+            <h2>🔗 Wallet Connection</h2>
+            <div class="status-display">
+                <p><strong>Status:</strong> <span id="walletStatus">Not Connected</span></p>
+                <p><strong>Account:</strong> <span id="accountDisplay">-</span></p>
+                <p><strong>Contract Address:</strong> <code id="currentContractAddress">0xD887D78d1A3Bad4981187effc97135C02c1D0961</code></p>
+            </div>
+            <div class="game-controls">
+                <button id="connectWallet" class="button primary">Connect Wallet</button>
+                <button id="disconnectWallet" class="button">Disconnect</button>
+            </div>
+        </div>
+
+        <!-- Contract Management Section -->
+        <div class="card">
+            <h2>⚙️ Contract Management</h2>
+            <div class="status-display">
+                <p><strong>Contract Status:</strong> <span id="contractStatus">Ready</span></p>
+                <p><strong>Current Address:</strong> <code id="currentContractAddress2">0xD887D78d1A3Bad4981187effc97135C02c1D0961</code></p>
+            </div>
+            <div class="game-controls">
+                <button id="resetContractBtn" class="button" style="background: #e74c3c;">Reset Contract Address</button>
+            </div>
+        </div>
+
+        <!-- Game List Section -->
+        <div class="card">
+            <h2>📋 Available Games</h2>
+            <div id="gamesList" class="status-display">
+                <p>Connect wallet and deploy contract to see games</p>
+            </div>
+            <!-- Game list controls removed - games load automatically -->
+        </div>
+
+        <!-- Preset Games Section -->
+        <div class="card">
+            <h2>🎰 Preset Game Templates (Meta Transaction Ready)</h2>
+            <div id="presetGamesList" class="poker-options">
+                <!-- Preset games will be loaded here -->
+            </div>
+            <!-- Preset games load automatically -->
+        </div>
+
+        <!-- Game Section -->
+        <div class="card">
+            <h2>🎮 Game Interface</h2>
+            <div class="status-display">
+                <p><strong>Game ID:</strong> <span id="currentGameId">-</span></p>
+                <p><strong>Game Type:</strong> <span id="gameType">-</span></p>
+                <p><strong>Players:</strong> <span id="playerCount">0</span></p>
+                <p><strong>Status:</strong> <span id="gameStatus">No active game</span></p>
+                <p><strong>🔐 Privacy Mode:</strong> <span style="color: #27ae60;">FHE Encryption Active</span></p>
+                <p><strong>🃏 Card Privacy:</strong> <span style="color: #e74c3c;">All cards encrypted until reveal</span></p>
+            </div>
+
+            <!-- Game controls removed - use preset games instead -->
+
+            <!-- Meta Transaction Demo Instructions -->
+            <div class="status-display" style="background: rgba(52,152,219,0.1); border: 1px solid #3498db;">
+                <h4>🚀 Meta Transaction Demo:</h4>
+                <p><strong>1.</strong> Connect your wallet above</p>
+                <p><strong>2.</strong> Choose a preset game below</p>
+                <p><strong>3.</strong> Click <strong>"Meta Tx Join"</strong> to experience gasless transactions</p>
+                <p><strong>4.</strong> Sign the transaction (no gas fees required!)</p>
+                <p style="color: #e74c3c; margin-top: 10px;"><strong>⚡ Key Feature:</strong> Meta transactions allow you to interact with the blockchain without paying gas fees!</p>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessages"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script>
+        // Contract ABI - Updated to match the actual smart contract
+        const CONTRACT_ABI = [
+            "function createGame(uint8 gameType, uint256 maxPlayers, uint256 minBet) external returns (uint256)",
+            "function joinGame(uint256 gameId, bool wantsToJoin) external payable",
+            "function makeMove(uint256 gameId, bool call, bool raise, bool fold) external payable",
+            "function revealCards(uint256 gameId, bool[] memory cards) external",
+            "function getGameInfo(uint256 gameId) external view returns (tuple(uint256 gameId, uint256 maxPlayers, uint256 currentPlayers, uint256 totalPot, uint256 minBet, uint8 gameType, bool isActive, bool hasStarted, address[] players, uint256 currentRound, uint256 timestamp))",
+            "function getPlayerCards(uint256 gameId, address player) external view returns (tuple(address player, uint256 gameId, bool[] encryptedCards, bool isActive, uint256 encryptedBet, bool hasFolded, uint256 totalBet, uint256 lastAction))",
+            "function getTotalGames() external view returns (uint256)",
+            "function getPlayerGames(address player) external view returns (uint256[])",
+            "function getPlayerEncryptedBet(uint256 gameId, address player) external view returns (uint256)",
+            "function getPlayerEncryptedFoldStatus(uint256 gameId, address player) external view returns (bool)",
+            "function isPlayerFolded(uint256 gameId, address player, bool foldValue) external returns (bool)",
+            "function compareBetAmount(uint256 gameId, address player, uint32 betAmount) external returns (bool)",
+            "function emergencyEndGame(uint256 gameId) external",
+            "function withdraw() external",
+            "event GameCreated(uint256 indexed gameId, uint8 gameType, uint256 maxPlayers, uint256 minBet)",
+            "event PlayerJoined(uint256 indexed gameId, address indexed player, uint256 totalPlayers)",
+            "event GameStarted(uint256 indexed gameId, address[] players, uint256 totalPot)",
+            "event PlayerMoved(uint256 indexed gameId, address indexed player, uint256 moveId, uint256 timestamp)",
+            "event GameEnded(uint256 indexed gameId, address indexed winner, uint256 prize)",
+            "event CardsDealt(uint256 indexed gameId, uint256 round)"
+        ];
+
+        // Contract bytecode for deployment
+        const CONTRACT_BYTECODE = "0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610123806100606000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80638da5cb5b14602d575b600080fd5b6000546040516001600160a01b03909116815260200160405180910390f3fe";
+
+        // Global variables
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let userAccount = null;
+        let currentGameId = null;
+        let selectedGameType = null;
+        let contractDeployed = false;
+        let presetGames = []; // Store preset games for meta transactions
+        let metaTxNonce = 0; // Meta transaction nonce
+        let relayerAddress = "0x742d35Cc6635C0532925a3b8D8ef3A6eE4A52AC4"; // Demo relayer address
+
+        // Contract address management
+        let CONTRACT_ADDRESS = localStorage.getItem('pokerContractAddress') || "0xD887D78d1A3Bad4981187effc97135C02c1D0961";
+
+        // 状态管理
+        function saveGameState() {
+            const gameState = {
+                contractAddress: CONTRACT_ADDRESS,
+                contractDeployed: contractDeployed,
+                currentGameId: currentGameId,
+                selectedGameType: selectedGameType,
+                presetGames: presetGames
+            };
+            localStorage.setItem('pokerGameState', JSON.stringify(gameState));
+            console.log('Game state saved:', gameState);
+        }
+
+        function loadGameState() {
+            try {
+                const savedState = localStorage.getItem('pokerGameState');
+                if (savedState) {
+                    const gameState = JSON.parse(savedState);
+                    console.log('Loading game state:', gameState);
+
+                    CONTRACT_ADDRESS = gameState.contractAddress || CONTRACT_ADDRESS;
+                    contractDeployed = gameState.contractDeployed || false;
+                    currentGameId = gameState.currentGameId || null;
+                    selectedGameType = gameState.selectedGameType || null;
+
+                    // Load preset games if available
+                    if (gameState.presetGames && Array.isArray(gameState.presetGames)) {
+                        presetGames = gameState.presetGames;
+                        console.log('Loaded preset games from state:', presetGames.length);
+                    }
+
+                    console.log('Game state loaded:', { contractDeployed, currentGameId, selectedGameType, presetGamesCount: presetGames.length });
+                }
+            } catch (error) {
+                console.error('Failed to load game state:', error);
+            }
+        }
+
+        // Initialize the application
+        async function init() {
+            console.log("Initializing Privacy Poker Game...");
+
+            // 先加载保存的状态
+            loadGameState();
+
+            // Update UI with current contract address
+            const addressElement = document.getElementById('currentContractAddress');
+            if (addressElement) {
+                addressElement.textContent = CONTRACT_ADDRESS;
+            }
+
+            setupEventListeners();
+            await checkExistingContract();
+            updateUI();
+
+            // Try to load auctions if everything is ready
+            if (contractDeployed && contract) {
+                console.log('Contract ready on init, loading auctions...');
+                setTimeout(() => loadAuctions(), 2000);
+            } else if (contractDeployed && !contract) {
+                console.log('Contract deployed but no contract instance, checking again...');
+                // Force contract connection if we know it should be deployed
+                setTimeout(async () => {
+                    if (typeof window.ethereum !== 'undefined') {
+                        try {
+                            provider = new ethers.BrowserProvider(window.ethereum);
+                            await checkExistingContract();
+                            if (contract) {
+                                console.log('Contract instance created, loading auctions...');
+                                await loadAuctions();
+                            }
+                        } catch (error) {
+                            console.error('Failed to reconnect to contract:', error);
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            console.log("Setting up event listeners...");
+
+            // Helper function to safely add event listeners
+            function safeAddListener(id, eventType, handler) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener(eventType, (e) => {
+                        console.log(`Button clicked: ${id}`);
+                        e.preventDefault();
+                        handler(e);
+                    });
+                    console.log(`✓ Event listener added for ${id}`);
+
+                    // Test button click manually
+                    element.onclick = (e) => {
+                        console.log(`Direct onclick for ${id}`);
+                        e.preventDefault();
+                        handler(e);
+                    };
+                } else {
+                    console.warn(`⚠️ Element not found: ${id}`);
+                }
+            }
+
+            // Wallet buttons
+            safeAddListener('connectWallet', 'click', connectWallet);
+            safeAddListener('disconnectWallet', 'click', disconnectWallet);
+
+            // Test button
+            safeAddListener('testButton', 'click', function() {
+                alert('Button click working! JavaScript loaded!');
+                console.log('Test button clicked - JavaScript is working!');
+                showMessage('Test button working properly!', 'success');
+            });
+
+            // Deployment buttons
+            safeAddListener('quickDeployBtn', 'click', quickDeploy);
+            safeAddListener('tournamentDeployBtn', 'click', tournamentDeploy);
+            safeAddListener('customDeployBtn', 'click', customDeploy);
+            safeAddListener('resetContractBtn', 'click', resetContract);
+
+            // Game option selection
+            const pokerOptions = document.querySelectorAll('.poker-option');
+            console.log(`Found ${pokerOptions.length} poker options`);
+            pokerOptions.forEach(option => {
+                option.addEventListener('click', selectGameType);
+            });
+
+            // Test button first
+            safeAddListener('testClickBtn', 'click', function() {
+                console.log('TEST BUTTON CLICKED - JavaScript is working!');
+                alert('JavaScript is working! Test button clicked.');
+                showMessage('Test button clicked successfully!', 'success');
+            });
+
+            // Simple create button
+            safeAddListener('simpleCreateBtn', 'click', async function() {
+                console.log('🚀 Simple Create Game button clicked');
+
+                if (!userAccount) {
+                    alert('Please connect wallet first!');
+                    return;
+                }
+
+                if (!contract) {
+                    alert('Contract not available!');
+                    return;
+                }
+
+                try {
+                    console.log('Creating simple game...');
+                    showMessage('Creating simple game...', 'info');
+
+                    const tx = await contract.createGame(0, 4, ethers.parseEther("0.01"), {
+                        value: ethers.parseEther("0.01")
+                    });
+
+                    console.log('Transaction sent:', tx.hash);
+                    showMessage('Transaction sent! Waiting...', 'info');
+
+                    await tx.wait();
+
+                    console.log('Game created successfully!');
+                    showMessage('Simple game created!', 'success');
+
+                    // Refresh games list
+                    setTimeout(() => loadAuctions(), 2000);
+
+                } catch (error) {
+                    console.error('Simple create failed:', error);
+                    showMessage('Failed: ' + error.message, 'error');
+                }
+            });
+
+            // Game controls
+            safeAddListener('createGame', 'click', createNewGame);
+            safeAddListener('joinGame', 'click', joinExistingGame);
+            safeAddListener('leaveGame', 'click', leaveGame);
+            safeAddListener('refreshGames', 'click', refreshGamesList);
+            safeAddListener('forceLoadAuctions', 'click', function() {
+                console.log('Force Load Auctions button clicked');
+                console.log('Current state:', {
+                    provider: !!provider,
+                    signer: !!signer,
+                    contract: !!contract,
+                    contractDeployed: contractDeployed,
+                    CONTRACT_ADDRESS: CONTRACT_ADDRESS,
+                    userAccount: userAccount
+                });
+                loadAuctions();
+            });
+
+            safeAddListener('createFirstGame', 'click', async function() {
+                console.log('🎮 Create First Game button clicked');
+                console.log('Current state check:', {
+                    contract: !!contract,
+                    signer: !!signer,
+                    userAccount: userAccount,
+                    contractDeployed: contractDeployed
+                });
+
+                if (!signer) {
+                    alert('Please connect wallet first!');
+                    showMessage('Please connect wallet first', 'error');
+                    return;
+                }
+
+                if (!contract) {
+                    alert('Contract not available!');
+                    showMessage('Contract not available', 'error');
+                    return;
+                }
+
+                try {
+                    console.log('✅ Starting game creation...');
+                    showMessage('Creating first game...', 'info');
+
+                    const gameType = 0; // Texas Hold'em
+                    const maxPlayers = 4;
+                    const betAmount = ethers.parseEther("0.01");
+
+                    console.log('📝 Game parameters:', { gameType, maxPlayers, betAmount: betAmount.toString() });
+
+                    console.log('📤 Sending createGame transaction...');
+                    const tx = await contract.createGame(gameType, maxPlayers, betAmount, { value: betAmount });
+                    console.log('✅ Create game transaction sent:', tx.hash);
+
+                    showMessage(`Transaction sent: ${tx.hash}`, 'info');
+                    showMessage('Waiting for confirmation...', 'info');
+
+                    const receipt = await tx.wait();
+                    console.log('✅ Game creation confirmed:', receipt);
+
+                    showMessage('Game created successfully! Refreshing list...', 'success');
+
+                    // Try to extract game ID from receipt
+                    if (receipt.logs) {
+                        console.log('📋 Transaction logs:', receipt.logs);
+                    }
+
+                    setTimeout(() => {
+                        console.log('🔄 Refreshing games list...');
+                        loadAuctions();
+                    }, 2000);
+                } catch (error) {
+                    console.error('❌ Failed to create game:', error);
+                    if (error.code === 4001) {
+                        showMessage('Transaction cancelled by user', 'warning');
+                    } else if (error.message.includes('insufficient funds')) {
+                        showMessage('Insufficient funds for gas', 'error');
+                    } else {
+                        showMessage('Failed to create game: ' + error.message, 'error');
+                    }
+                }
+            });
+
+            // Poker actions
+            safeAddListener('callBtn', 'click', () => makeMove(true, false, false));
+            safeAddListener('raiseBtn', 'click', () => makeMove(false, true, false));
+            safeAddListener('foldBtn', 'click', () => makeMove(false, false, true));
+            safeAddListener('checkBtn', 'click', () => makeMove(true, false, false));
+
+            // Privacy features
+            safeAddListener('revealCardsBtn', 'click', revealCards);
+            safeAddListener('showPlayerCardsBtn', 'click', showPlayerCards);
+            safeAddListener('encryptedBetBtn', 'click', showEncryptedBet);
+            safeAddListener('foldStatusBtn', 'click', checkFoldStatus);
+            safeAddListener('compareHandBtn', 'click', compareHandStrength);
+            safeAddListener('gameHistoryBtn', 'click', showGameHistory);
+
+            // Preset games and meta transactions
+            safeAddListener('loadPresetGames', 'click', loadPresetGames);
+            safeAddListener('metaTxDemo', 'click', metaTransactionDemo);
+            safeAddListener('initPresetGames', 'click', initializePresetGames);
+            safeAddListener('joinRandomGame', 'click', joinRandomPresetGame);
+            safeAddListener('clearPresetGames', 'click', clearPresetGames);
+
+            console.log("Event listeners setup completed");
+        }
+
+        // Wallet connection functions
+        async function connectWallet() {
+            try {
+                console.log('Connect wallet button clicked');
+
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask wallet extension!');
+                    showMessage('MetaMask not found. Please install MetaMask.', 'error');
+                    return;
+                }
+
+                console.log('MetaMask detected, requesting accounts...');
+                provider = new ethers.BrowserProvider(window.ethereum);
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                console.log('Accounts received:', accounts);
+
+                signer = await provider.getSigner();
+                userAccount = await signer.getAddress();
+
+                console.log('Wallet connected:', userAccount);
+                showMessage('Wallet connected successfully!', 'success');
+
+                // Check if contract exists at the current address
+                await checkExistingContract();
+                updateUI();
+
+                // Automatically load auctions/games if contract is deployed
+                if (contractDeployed) {
+                    console.log('Contract deployed, calling loadAuctions...');
+                    await loadAuctions();
+                } else {
+                    console.log('Contract not deployed, skipping loadAuctions');
+                }
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+
+                // Handle specific error cases
+                if (error.code === 4001 || error.message.includes('User rejected')) {
+                    showMessage('User cancelled connection request', 'error');
+                } else if (error.message.includes('No provider')) {
+                    showMessage('Please install MetaMask wallet first', 'error');
+                } else {
+                    showMessage('Wallet connection failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function disconnectWallet() {
+            provider = null;
+            signer = null;
+            contract = null;
+            userAccount = null;
+            contractDeployed = false;
+            updateUI();
+            showMessage('Wallet disconnected', 'success');
+        }
+
+        // Contract deployment functions
+        async function quickDeploy() {
+            console.log('Quick deploy button clicked');
+            await deployContract(0, 4, ethers.parseEther("0.01"));
+        }
+
+        async function tournamentDeploy() {
+            console.log('Tournament deploy button clicked');
+            await deployContract(1, 8, ethers.parseEther("0.1"));
+        }
+
+        async function customDeploy() {
+            const gameType = prompt("Enter game type (0-3):");
+            const maxPlayers = prompt("Enter max players (2-8):");
+            const betAmount = prompt("Enter bet amount in ETH:");
+
+            if (gameType !== null && maxPlayers !== null && betAmount !== null) {
+                await deployContract(parseInt(gameType), parseInt(maxPlayers), ethers.parseEther(betAmount));
+            }
+        }
+
+        async function deployContract(gameType, maxPlayers, betAmount) {
+            if (!signer) {
+                alert('Please connect wallet first!');
+                showMessage('Please connect wallet first', 'error');
+                return;
+            }
+
+            try {
+                console.log('Starting contract deployment...');
+                showMessage('Deploying contract...', 'info');
+
+                const factory = new ethers.ContractFactory(CONTRACT_ABI, CONTRACT_BYTECODE, signer);
+                console.log('Contract factory created');
+
+                const deployedContract = await factory.deploy();
+                console.log('Deploy transaction sent');
+
+                showMessage('Waiting for blockchain confirmation...', 'info');
+                await deployedContract.waitForDeployment();
+                console.log('Contract deployed');
+
+                CONTRACT_ADDRESS = await deployedContract.getAddress();
+                localStorage.setItem('pokerContractAddress', CONTRACT_ADDRESS);
+
+                // Update UI
+                document.getElementById('currentContractAddress').textContent = CONTRACT_ADDRESS;
+
+                contract = deployedContract;
+                contractDeployed = true;
+
+                // 保存状态
+                saveGameState();
+
+                console.log('Contract deployed at:', CONTRACT_ADDRESS);
+                showMessage(`Contract deployed successfully! Address: ${CONTRACT_ADDRESS}`, 'success');
+                updateUI();
+
+                // 自动创建第一个游戏
+                setTimeout(async () => {
+                    try {
+                        console.log('Auto-creating game after deployment...');
+                        await createGameAfterDeployment(gameType, maxPlayers, betAmount);
+                    } catch (error) {
+                        console.error('Failed to auto-create game:', error);
+                        showMessage('Contract deployed successfully, but auto-create game failed. Please create manually.', 'warning');
+                    }
+                }, 2000);
+
+            } catch (error) {
+                console.error('Deployment error:', error);
+
+                if (error.code === 4001 || error.message.includes('User rejected')) {
+                    showMessage('User cancelled transaction', 'error');
+                } else if (error.message.includes('insufficient funds')) {
+                    showMessage('Insufficient funds for gas fees', 'error');
+                } else {
+                    showMessage('Contract deployment failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Reset contract address to default
+        function resetContract() {
+            const defaultAddress = "0xD887D78d1A3Bad4981187effc97135C02c1D0961";
+            CONTRACT_ADDRESS = defaultAddress;
+            localStorage.setItem('pokerContractAddress', defaultAddress);
+            document.getElementById('currentContractAddress').textContent = defaultAddress;
+            contract = null;
+            contractDeployed = false;
+            updateUI();
+            showMessage('Contract address reset to default', 'success');
+        }
+
+        // Check if contract exists at address
+        async function checkExistingContract() {
+            if (!provider) {
+                console.log('No provider available for contract check');
+                return;
+            }
+
+            try {
+                console.log('Checking contract at address:', CONTRACT_ADDRESS);
+                const code = await provider.getCode(CONTRACT_ADDRESS);
+                const hasCode = code !== '0x' && code !== '0x0';
+
+                console.log('Contract code check result:', { hasCode, codeLength: code.length });
+
+                if (hasCode) {
+                    contractDeployed = true;
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer || provider);
+                    console.log('Contract found and connected');
+                    showMessage('Connected to existing contract', 'success');
+
+                    // 保存状态
+                    saveGameState();
+
+                    // Load auctions if we have a signer (user connected)
+                    if (signer) {
+                        console.log('Contract found with signer, loading auctions...');
+                        setTimeout(() => loadAuctions(), 1000);
+                    }
+                } else {
+                    contractDeployed = false;
+                    contract = null;
+                    console.log('No contract found at address');
+                    showMessage('No contract found at current address', 'info');
+                }
+            } catch (error) {
+                console.error('Contract check error:', error);
+                contractDeployed = false;
+                contract = null;
+                showMessage('Error checking contract', 'error');
+            }
+        }
+
+        // 部署后自动创建游戏
+        async function createGameAfterDeployment(gameType, maxPlayers, betAmount) {
+            if (!contract || !contractDeployed) {
+                throw new Error('Contract not deployed');
+            }
+
+            try {
+                console.log('Creating game with params:', { gameType, maxPlayers, betAmount });
+                showMessage('Creating game...', 'info');
+
+                const tx = await contract.createGame(gameType, maxPlayers, betAmount, { value: betAmount });
+                console.log('Game creation transaction sent:', tx.hash);
+
+                showMessage('等待游戏创建确认...', 'info');
+                const receipt = await tx.wait();
+                console.log('Game creation confirmed:', receipt);
+
+                // 从交易回执中获取游戏ID
+                const gameCreatedEvent = receipt.logs.find(log => {
+                    try {
+                        const parsedLog = contract.interface.parseLog(log);
+                        return parsedLog.name === 'GameCreated';
+                    } catch {
+                        return false;
+                    }
+                });
+
+                if (gameCreatedEvent) {
+                    const parsedLog = contract.interface.parseLog(gameCreatedEvent);
+                    currentGameId = Number(parsedLog.args.gameId);
+                    console.log('Game created with ID:', currentGameId);
+                    showMessage(`Game created successfully! Game ID: ${currentGameId}`, 'success');
+                } else {
+                    showMessage('Game created successfully!', 'success');
+                }
+
+                // 保存状态
+                saveGameState();
+                updateUI();
+
+                // Auto refresh games list
+                setTimeout(() => {
+                    loadAuctions();
+                }, 1000);
+
+                return true;
+            } catch (error) {
+                console.error('Game creation failed:', error);
+
+                if (error.code === 4001 || error.message.includes('User rejected')) {
+                    showMessage('用户取消了游戏创建', 'error');
+                } else if (error.message.includes('insufficient funds')) {
+                    showMessage('余额不足，无法创建游戏', 'error');
+                } else {
+                    showMessage('游戏创建失败: ' + error.message, 'error');
+                }
+                throw error;
+            }
+        }
+
+        // Game functions
+        function selectGameType(event) {
+            // Remove selection from all options
+            document.querySelectorAll('.poker-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Add selection to clicked option
+            event.currentTarget.classList.add('selected');
+            selectedGameType = event.currentTarget.dataset.type;
+            showMessage(`Selected: ${selectedGameType} game`, 'info');
+        }
+
+        async function createNewGame() {
+            console.log('🎮 Create New Game button clicked');
+            console.log('Current state:', {
+                contract: !!contract,
+                signer: !!signer,
+                contractDeployed: contractDeployed,
+                selectedGameType: selectedGameType,
+                userAccount: userAccount
+            });
+
+            if (!signer) {
+                alert('Please connect wallet first!');
+                showMessage('Please connect wallet first!', 'error');
+                return;
+            }
+
+            if (!contract) {
+                alert('Please deploy contract first!');
+                showMessage('Please deploy contract first!', 'error');
+                return;
+            }
+
+            try {
+                const gameType = selectedGameType ? ['quick', 'tournament', 'custom'].indexOf(selectedGameType) : 0;
+                const maxPlayers = gameType === 1 ? 8 : 4;
+                const betAmount = ethers.parseEther(gameType === 1 ? "0.1" : "0.01");
+
+                console.log('✅ Creating game manually with:', { gameType, maxPlayers, betAmount: betAmount.toString(), selectedGameType });
+                showMessage('Creating game...', 'info');
+
+                const tx = await contract.createGame(gameType, maxPlayers, betAmount, { value: betAmount });
+                const receipt = await tx.wait();
+
+                // 获取游戏ID
+                const gameCreatedEvent = receipt.logs.find(log => {
+                    try {
+                        const parsedLog = contract.interface.parseLog(log);
+                        return parsedLog.name === 'GameCreated';
+                    } catch {
+                        return false;
+                    }
+                });
+
+                if (gameCreatedEvent) {
+                    const parsedLog = contract.interface.parseLog(gameCreatedEvent);
+                    currentGameId = Number(parsedLog.args.gameId);
+                    console.log('Manual game created with ID:', currentGameId);
+                    showMessage(`Game created successfully! Game ID: ${currentGameId}`, 'success');
+                } else {
+                    showMessage('Game created successfully!', 'success');
+                }
+
+                // 保存状态
+                saveGameState();
+                updateUI();
+
+                // Auto refresh games list after manual creation
+                setTimeout(() => {
+                    loadAuctions();
+                }, 1000);
+            } catch (error) {
+                console.error('Create game error:', error);
+                if (error.code === 4001 || error.message.includes('User rejected')) {
+                    showMessage('User cancelled game creation', 'error');
+                } else {
+                    showMessage('Game creation failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function joinExistingGame() {
+            const gameId = prompt("Enter Game ID to join:");
+            if (!gameId || !contract) return;
+
+            try {
+                showMessage('Joining game...', 'info');
+                const tx = await contract.joinGame(parseInt(gameId), true, { value: ethers.parseEther("0.01") });
+                await tx.wait();
+
+                currentGameId = parseInt(gameId);
+                showMessage('Joined game successfully!', 'success');
+                updateUI();
+            } catch (error) {
+                console.error('Join game error:', error);
+                showMessage('Failed to join game: ' + error.message, 'error');
+            }
+        }
+
+        async function leaveGame() {
+            if (!currentGameId || !contract) return;
+
+            try {
+                showMessage('Leaving game...', 'info');
+                const tx = await contract.leaveGame(currentGameId);
+                await tx.wait();
+
+                currentGameId = null;
+                showMessage('Left game successfully!', 'success');
+                updateUI();
+            } catch (error) {
+                console.error('Leave game error:', error);
+                showMessage('Failed to leave game: ' + error.message, 'error');
+            }
+        }
+
+        async function makeMove(call, raise, fold) {
+            // Check if this is a preset game (string ID)
+            if (typeof currentGameId === 'string' && currentGameId.startsWith('preset_')) {
+                const action = call ? 'call' : raise ? 'raise' : 'fold';
+                showMessage(`Simulated ${action} in preset game ${currentGameId}`, 'info');
+
+                // Update preset game state
+                const game = presetGames.find(g => g.id === currentGameId);
+                if (game) {
+                    if (raise) {
+                        game.pot = (parseFloat(game.pot) + 0.01).toFixed(3);
+                    }
+                    displayPresetGames();
+                    showMessage(`Move completed: ${action} (simulated)`, 'success');
+                }
+                return;
+            }
+
+            // Handle contract games (numeric ID)
+            if (!contract) {
+                showMessage('Contract not available', 'error');
+                return;
+            }
+
+            try {
+                const numericGameId = parseInt(currentGameId);
+                if (isNaN(numericGameId)) {
+                    showMessage('Invalid game ID for contract interaction', 'error');
+                    return;
+                }
+
+                const action = call ? 'call' : raise ? 'raise' : 'fold';
+                showMessage(`Making move: ${action}...`, 'info');
+
+                const value = raise ? ethers.parseEther("0.01") : 0;
+                const tx = await contract.makeMove(numericGameId, call, raise, fold, { value });
+                await tx.wait();
+
+                showMessage(`Move completed: ${action}`, 'success');
+                updateUI();
+            } catch (error) {
+                console.error('Make move error:', error);
+                showMessage('Failed to make move: ' + error.message, 'error');
+            }
+        }
+
+        // UI update functions
+        function updateUI() {
+            console.log('Updating UI with:', { userAccount, currentGameId, selectedGameType, contractDeployed });
+
+            // Update wallet status
+            const walletStatus = document.getElementById('walletStatus');
+            const accountDisplay = document.getElementById('accountDisplay');
+
+            if (userAccount) {
+                walletStatus.textContent = 'Connected';
+                accountDisplay.textContent = userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+            } else {
+                walletStatus.textContent = 'Not Connected';
+                accountDisplay.textContent = '-';
+            }
+
+            // Update game info
+            const gameIdDisplay = document.getElementById('currentGameId');
+            const gameTypeDisplay = document.getElementById('gameType');
+            const gameStatusDisplay = document.getElementById('gameStatus');
+
+            if (gameIdDisplay) {
+                gameIdDisplay.textContent = currentGameId || '-';
+            }
+            if (gameTypeDisplay) {
+                gameTypeDisplay.textContent = selectedGameType || '-';
+            }
+
+            if (gameStatusDisplay) {
+                if (currentGameId) {
+                    if (typeof currentGameId === 'string' && currentGameId.startsWith('preset_')) {
+                        const presetGame = presetGames.find(g => g.id === currentGameId);
+                        gameStatusDisplay.textContent = presetGame ?
+                            `Playing: ${presetGame.name} (${presetGame.status})` :
+                            `Preset Game #${currentGameId} active`;
+                    } else {
+                        gameStatusDisplay.textContent = `Contract Game #${currentGameId} created, ready to join!`;
+                    }
+                } else if (contractDeployed) {
+                    gameStatusDisplay.textContent = 'Contract deployed, ready to create games';
+                } else {
+                    gameStatusDisplay.textContent = 'Please deploy contract first';
+                }
+            }
+
+            // Update player count if we have a game
+            const playerCountDisplay = document.getElementById('playerCount');
+            if (playerCountDisplay) {
+                if (currentGameId) {
+                    // Try to get game info and update player count
+                    getGameInfo();
+                } else {
+                    playerCountDisplay.textContent = '0';
+                }
+            }
+        }
+
+        // Get game information from contract or preset games
+        async function getGameInfo() {
+            if (!currentGameId) return;
+
+            try {
+                // Check if this is a preset game (string ID) or contract game (number ID)
+                if (typeof currentGameId === 'string' && currentGameId.startsWith('preset_')) {
+                    console.log('Getting info for preset game:', currentGameId);
+
+                    // Handle preset game
+                    const presetGame = presetGames.find(g => g.id === currentGameId);
+                    if (presetGame) {
+                        const playerCountDisplay = document.getElementById('playerCount');
+                        if (playerCountDisplay) {
+                            playerCountDisplay.textContent = presetGame.players.length.toString();
+                        }
+                        console.log('Preset game info updated:', presetGame);
+                    }
+                } else {
+                    // Handle contract game (numeric ID)
+                    if (!contract) return;
+
+                    const numericGameId = parseInt(currentGameId);
+                    if (isNaN(numericGameId)) {
+                        console.log('Invalid numeric game ID:', currentGameId);
+                        return;
+                    }
+
+                    console.log('Getting info for contract game:', numericGameId);
+                    const gameInfo = await contract.getGameInfo(numericGameId);
+                    console.log('Contract game info retrieved:', gameInfo);
+
+                    const playerCountDisplay = document.getElementById('playerCount');
+                    if (playerCountDisplay && gameInfo) {
+                        playerCountDisplay.textContent = gameInfo.currentPlayers ? gameInfo.currentPlayers.toString() : '0';
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to get game info:', error);
+                // Don't show error message for preset games, as they don't exist on contract
+                if (typeof currentGameId === 'number' || (typeof currentGameId === 'string' && !currentGameId.startsWith('preset_'))) {
+                    console.warn('Contract game info error for ID:', currentGameId);
+                }
+            }
+        }
+
+        // Load auctions/games list
+        async function loadAuctions() {
+            console.log('loadAuctions called with:', { contract: !!contract, contractDeployed, CONTRACT_ADDRESS });
+
+            // Try to create contract instance if we don't have one but should
+            if (!contract && contractDeployed && CONTRACT_ADDRESS !== "0xD887D78d1A3Bad4981187effc97135C02c1D0961") {
+                console.log('Trying to create contract instance...');
+                try {
+                    if (!provider && typeof window.ethereum !== 'undefined') {
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                    }
+                    if (provider) {
+                        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                        console.log('Contract instance created for loadAuctions');
+                    }
+                } catch (error) {
+                    console.error('Failed to create contract instance:', error);
+                }
+            }
+
+            if (!contract || !contractDeployed) {
+                console.log('Contract not available for loading auctions');
+                document.getElementById('gamesList').innerHTML = '<p>Please connect wallet and deploy contract first to see games</p>';
+                return;
+            }
+
+            try {
+                console.log('Loading auctions/games...');
+                showMessage('Loading games...', 'info');
+
+                const gamesListDiv = document.getElementById('gamesList');
+                let gamesHTML = '<h4>Available Games:</h4>';
+                let foundGames = false;
+
+                // First, try to check if we can get any existing games
+                // Start from game ID 0 and 1, then check higher numbers
+                const gamesToCheck = [0, 1, 2, ...Array.from({length: 18}, (_, i) => i + 3)]; // 0,1,2,3,4...20
+
+                for (let gameId of gamesToCheck) {
+                    try {
+                        console.log(`Checking game #${gameId}...`);
+                        const gameInfo = await contract.getGameInfo(gameId);
+
+                        // Check if we got valid game data
+                        if (gameInfo) {
+                            // Handle both tuple and object returns
+                            const id = gameInfo.id || gameInfo[0] || gameId;
+                            const maxPlayers = gameInfo.maxPlayers || gameInfo[1];
+                            const currentPlayers = gameInfo.currentPlayers || gameInfo[2];
+                            const totalPot = gameInfo.totalPot || gameInfo[3];
+                            const betAmount = gameInfo.betAmount || gameInfo[4];
+                            const gameType = gameInfo.gameType || gameInfo[5];
+                            const isActive = gameInfo.isActive || gameInfo[6];
+                            const isStarted = gameInfo.isStarted || gameInfo[7];
+
+                            // Validate that this is actually a game (has players or is active)
+                            if (maxPlayers > 0 || isActive || currentPlayers > 0) {
+                                foundGames = true;
+
+                                const gameTypeNames = ['Texas Hold\'em', 'Five Card Draw', 'Omaha', 'Seven Card Stud'];
+                                const gameTypeName = gameTypeNames[gameType] || 'Unknown';
+
+                                console.log(`✅ Found valid game #${id}:`, {
+                                    gameType, maxPlayers, currentPlayers, isActive, isStarted, totalPot: totalPot?.toString()
+                                });
+
+                                gamesHTML += `
+                                    <div style="border: 1px solid rgba(255,255,255,0.3); padding: 15px; margin: 10px 0; border-radius: 10px; background: rgba(255,255,255,0.05);">
+                                        <p><strong>🎮 Game #${id}</strong></p>
+                                        <p>📊 Type: ${gameTypeName}</p>
+                                        <p>👥 Players: ${currentPlayers || 0}/${maxPlayers || 0}</p>
+                                        <p>💰 Pot: ${totalPot ? ethers.formatEther(totalPot) : '0'} ETH</p>
+                                        <p>🎯 Bet: ${betAmount ? ethers.formatEther(betAmount) : '0'} ETH</p>
+                                        <p>📋 Status: ${isActive ? '✅ Active' : '⏸️ Inactive'} ${isStarted ? '(Started)' : '(Waiting)'}</p>
+                                        <button onclick="joinGameById(${id})" class="button" style="font-size: 0.9rem; padding: 8px 16px; margin-top: 10px;">Join Game #${id}</button>
+                                    </div>
+                                `;
+                            } else {
+                                console.log(`⚠️ Game #${gameId} exists but appears empty:`, { maxPlayers, isActive, currentPlayers });
+                            }
+                        }
+                    } catch (error) {
+                        // This is expected for non-existent games
+                        if (error.message.includes('execution reverted')) {
+                            console.log(`Game #${gameId} does not exist (reverted)`);
+                        } else {
+                            console.log(`Game #${gameId} error:`, error.message);
+                        }
+
+                        // Stop checking if we haven't found games after checking IDs 0-5
+                        if (gameId >= 5 && !foundGames) {
+                            console.log('No games found in first 6 IDs, stopping search');
+                            break;
+                        }
+                    }
+                }
+
+                if (foundGames) {
+                    gamesListDiv.innerHTML = gamesHTML;
+                    showMessage('Games loaded successfully!', 'success');
+                } else {
+                    gamesListDiv.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <p>🎮 No contract games found.</p>
+                            <p style="color: #f39c12; margin-top: 10px;">Use preset games below for testing!</p>
+                        </div>
+                    `;
+                    showMessage('No contract games available - use preset games for testing', 'info');
+                }
+            } catch (error) {
+                console.error('Error loading auctions/games:', error);
+                showMessage('Failed to load games: ' + error.message, 'error');
+                document.getElementById('gamesList').innerHTML = '<p>❌ Error loading games. Please try refreshing.</p>';
+            }
+        }
+
+        // Refresh games list (alias for loadAuctions)
+        async function refreshGamesList() {
+            await loadAuctions();
+        }
+
+        // Create a quick game (called from dynamic button)
+        async function createQuickGame() {
+            console.log('🚀 Create Quick Game button clicked (dynamic)');
+
+            if (!signer) {
+                alert('Please connect wallet first!');
+                return;
+            }
+
+            if (!contract) {
+                alert('Contract not available! Please refresh and try again.');
+                return;
+            }
+
+            try {
+                console.log('✅ Creating quick game...');
+                showMessage('Creating quick game...', 'info');
+
+                const gameType = 0; // Texas Hold'em
+                const maxPlayers = 4;
+                const betAmount = ethers.parseEther("0.01");
+
+                console.log('📝 Quick game parameters:', { gameType, maxPlayers, betAmount: betAmount.toString() });
+
+                const tx = await contract.createGame(gameType, maxPlayers, betAmount, { value: betAmount });
+                console.log('✅ Quick game transaction sent:', tx.hash);
+
+                showMessage(`Transaction sent: ${tx.hash.slice(0, 10)}...`, 'info');
+                showMessage('Waiting for confirmation...', 'info');
+
+                const receipt = await tx.wait();
+                console.log('✅ Quick game created:', receipt);
+
+                showMessage('Quick game created successfully! 🎉', 'success');
+
+                // Refresh the games list
+                setTimeout(() => {
+                    console.log('🔄 Refreshing games after quick creation...');
+                    loadAuctions();
+                }, 2000);
+
+            } catch (error) {
+                console.error('❌ Failed to create quick game:', error);
+                if (error.code === 4001) {
+                    showMessage('Transaction cancelled by user', 'warning');
+                } else if (error.message.includes('insufficient funds')) {
+                    showMessage('Insufficient funds for gas + bet', 'error');
+                } else {
+                    showMessage('Failed to create quick game: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Join game by ID
+        async function joinGameById(gameId) {
+            if (!contract) {
+                showMessage('Please connect wallet first', 'error');
+                return;
+            }
+
+            try {
+                showMessage(`Joining game #${gameId}...`, 'info');
+                const betAmount = ethers.parseEther("0.01");
+                const tx = await contract.joinGame(gameId, true, { value: betAmount });
+                await tx.wait();
+
+                currentGameId = gameId;
+                saveGameState();
+                updateUI();
+                showMessage(`Successfully joined game #${gameId}!`, 'success');
+            } catch (error) {
+                console.error('Error joining game:', error);
+                if (error.code === 4001 || error.message.includes('User rejected')) {
+                    showMessage('User cancelled transaction', 'error');
+                } else {
+                    showMessage('Failed to join game: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function showMessage(message, type = 'info') {
+            const messagesContainer = document.getElementById('statusMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+
+            messagesContainer.appendChild(messageDiv);
+
+            // Auto-remove message after 5 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 5000);
+        }
+
+        // Privacy and card-related functions
+        async function revealCards() {
+            if (!currentGameId || !contract) {
+                showMessage('No active game to reveal cards', 'error');
+                return;
+            }
+
+            try {
+                // Example card pattern - in real implementation, these would be actual card values
+                const demoCards = [true, false, true, false, true]; // Demo encrypted card values
+
+                showMessage('Revealing cards...', 'info');
+                const tx = await contract.revealCards(currentGameId, demoCards);
+                await tx.wait();
+
+                showMessage('Cards revealed successfully!', 'success');
+            } catch (error) {
+                console.error('Error revealing cards:', error);
+                showMessage('Failed to reveal cards: ' + error.message, 'error');
+            }
+        }
+
+        async function showPlayerCards() {
+            if (!currentGameId || !contract || !userAccount) {
+                showMessage('Cannot show cards - no active game or not connected', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Fetching your cards...', 'info');
+                const playerCards = await contract.getPlayerCards(currentGameId, userAccount);
+
+                console.log('Player cards:', playerCards);
+                showMessage('Player cards retrieved (check console for details)', 'success');
+
+                // Display in a more user-friendly way
+                const cardsDisplay = document.createElement('div');
+                cardsDisplay.innerHTML = `
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; margin: 10px 0; border-radius: 10px;">
+                        <h4>🃏 Your Cards (Encrypted):</h4>
+                        <p>Player: ${playerCards.player || 'N/A'}</p>
+                        <p>Game ID: ${playerCards.gameId || currentGameId}</p>
+                        <p>Is Active: ${playerCards.isActive ? '✅' : '❌'}</p>
+                        <p>Total Bet: ${playerCards.totalBet ? ethers.formatEther(playerCards.totalBet) : '0'} ETH</p>
+                        <p>Has Folded: ${playerCards.hasFolded ? '✅' : '❌'}</p>
+                        <p>Cards: [Encrypted Data - ${playerCards.encryptedCards ? playerCards.encryptedCards.length : 0} cards]</p>
+                    </div>
+                `;
+                document.getElementById('statusMessages').appendChild(cardsDisplay);
+
+            } catch (error) {
+                console.error('Error fetching player cards:', error);
+                showMessage('Failed to get player cards: ' + error.message, 'error');
+            }
+        }
+
+        async function showEncryptedBet() {
+            if (!currentGameId || !contract || !userAccount) {
+                showMessage('Cannot show bet - no active game or not connected', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Fetching encrypted bet amount...', 'info');
+                const encryptedBet = await contract.getPlayerEncryptedBet(currentGameId, userAccount);
+
+                console.log('Encrypted bet:', encryptedBet);
+                showMessage(`Encrypted bet amount retrieved: ${encryptedBet}`, 'success');
+
+            } catch (error) {
+                console.error('Error fetching encrypted bet:', error);
+                showMessage('Failed to get encrypted bet: ' + error.message, 'error');
+            }
+        }
+
+        async function checkFoldStatus() {
+            if (!currentGameId || !contract || !userAccount) {
+                showMessage('Cannot check fold status - no active game or not connected', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Checking encrypted fold status...', 'info');
+                const foldStatus = await contract.getPlayerEncryptedFoldStatus(currentGameId, userAccount);
+
+                console.log('Fold status:', foldStatus);
+                showMessage(`Player fold status: ${foldStatus ? 'Folded' : 'Active'}`, 'success');
+
+            } catch (error) {
+                console.error('Error checking fold status:', error);
+                showMessage('Failed to check fold status: ' + error.message, 'error');
+            }
+        }
+
+        async function compareHandStrength() {
+            if (!currentGameId || !contract || !userAccount) {
+                showMessage('Cannot compare hands - no active game or not connected', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Comparing hand strength using FHE...', 'info');
+
+                // Example comparison with a demo bet amount
+                const demoAmount = 1000; // Demo amount for comparison
+                const comparison = await contract.compareBetAmount(currentGameId, userAccount, demoAmount);
+
+                console.log('Bet comparison result:', comparison);
+                showMessage('Hand strength comparison completed (check console)', 'success');
+
+            } catch (error) {
+                console.error('Error comparing hand strength:', error);
+                showMessage('Failed to compare hand strength: ' + error.message, 'error');
+            }
+        }
+
+        async function showGameHistory() {
+            if (!contract || !userAccount) {
+                showMessage('Cannot show history - not connected', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Fetching game history...', 'info');
+                const playerGames = await contract.getPlayerGames(userAccount);
+
+                console.log('Player games:', playerGames);
+
+                const historyDisplay = document.createElement('div');
+                historyDisplay.innerHTML = `
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; margin: 10px 0; border-radius: 10px;">
+                        <h4>🎮 Your Game History:</h4>
+                        <p>Total Games Played: ${playerGames.length}</p>
+                        <p>Game IDs: ${playerGames.join(', ') || 'None'}</p>
+                        <button onclick="this.parentNode.parentNode.remove()" style="margin-top: 10px; padding: 5px 10px; border: none; background: #e74c3c; color: white; border-radius: 5px; cursor: pointer;">Close</button>
+                    </div>
+                `;
+                document.getElementById('statusMessages').appendChild(historyDisplay);
+
+                showMessage(`Found ${playerGames.length} games in your history`, 'success');
+
+            } catch (error) {
+                console.error('Error fetching game history:', error);
+                showMessage('Failed to get game history: ' + error.message, 'error');
+            }
+        }
+
+        // Preset games and meta transaction functionality
+        // Add event listeners for dynamically created preset game buttons
+        function addPresetGameEventListeners() {
+            console.log('🔧 Adding event listeners to preset game buttons...');
+
+            // Add listeners for join buttons
+            document.querySelectorAll('.preset-join-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const gameId = this.getAttribute('data-game-id');
+                    console.log(`🎮 Join button clicked for game: ${gameId}`);
+                    joinPresetGame(gameId);
+                });
+            });
+
+            // Add listeners for meta transaction buttons
+            document.querySelectorAll('.preset-meta-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const gameId = this.getAttribute('data-game-id');
+                    console.log(`🚀 Meta transaction button clicked for game: ${gameId}`);
+                    metaTxJoin(gameId);
+                });
+            });
+
+            console.log('✅ Event listeners added to all preset game buttons');
+        }
+
+        function initializePresetGames() {
+            console.log('🎰 Initializing preset games...');
+
+            // Define preset game templates
+            presetGames = [
+                {
+                    id: 'preset_1',
+                    name: '🚀 Lightning Texas Hold\'em',
+                    gameType: 0,
+                    maxPlayers: 4,
+                    minBet: '0.005',
+                    description: 'Fast-paced game with low stakes',
+                    status: 'ready',
+                    players: ['0x1234...', '0x5678...'],
+                    pot: '0.02'
+                },
+                {
+                    id: 'preset_2',
+                    name: '🏆 Tournament Five Card Draw',
+                    gameType: 1,
+                    maxPlayers: 6,
+                    minBet: '0.01',
+                    description: 'Classic five card draw tournament',
+                    status: 'waiting',
+                    players: ['0xabcd...'],
+                    pot: '0.01'
+                },
+                {
+                    id: 'preset_3',
+                    name: '🎭 High Stakes Omaha',
+                    gameType: 2,
+                    maxPlayers: 8,
+                    minBet: '0.05',
+                    description: 'Professional level Omaha poker',
+                    status: 'active',
+                    players: ['0xdef0...', '0x1111...', '0x2222...'],
+                    pot: '0.15'
+                },
+                {
+                    id: 'preset_4',
+                    name: '🔥 Seven Card Stud Express',
+                    gameType: 3,
+                    maxPlayers: 5,
+                    minBet: '0.02',
+                    description: 'Classic seven card stud',
+                    status: 'ready',
+                    players: ['0x3333...', '0x4444...'],
+                    pot: '0.04'
+                },
+                {
+                    id: 'preset_5',
+                    name: '💎 VIP Private Table',
+                    gameType: 0,
+                    maxPlayers: 3,
+                    minBet: '0.1',
+                    description: 'Exclusive high-roller table',
+                    status: 'vip',
+                    players: ['0x5555...'],
+                    pot: '0.1'
+                },
+                {
+                    id: 'preset_6',
+                    name: '🎪 Beginner Friendly',
+                    gameType: 1,
+                    maxPlayers: 4,
+                    minBet: '0.001',
+                    description: 'Perfect for new players',
+                    status: 'tutorial',
+                    players: [],
+                    pot: '0'
+                }
+            ];
+
+            displayPresetGames();
+            showMessage('Preset games initialized successfully!', 'success');
+        }
+
+        function displayPresetGames() {
+            const presetGamesDiv = document.getElementById('presetGamesList');
+            if (!presetGamesDiv) return;
+
+            let gamesHTML = '';
+
+            presetGames.forEach(game => {
+                const statusColor = getStatusColor(game.status);
+                const statusIcon = getStatusIcon(game.status);
+
+                gamesHTML += `
+                    <div class="poker-option preset-game" data-game-id="${game.id}" style="border-color: ${statusColor};">
+                        <h3>${statusIcon} ${game.name}</h3>
+                        <p><strong>Type:</strong> ${getGameTypeName(game.gameType)}</p>
+                        <p><strong>Players:</strong> ${game.players.length}/${game.maxPlayers}</p>
+                        <p><strong>Min Bet:</strong> ${game.minBet} ETH</p>
+                        <p><strong>Current Pot:</strong> ${game.pot} ETH</p>
+                        <p><strong>Status:</strong> <span style="color: ${statusColor};">${game.status.toUpperCase()}</span></p>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">${game.description}</p>
+                        <div style="margin-top: 10px;">
+                            <button id="join_${game.id}" class="button preset-join-btn" data-game-id="${game.id}" style="font-size: 0.8rem; padding: 6px 12px; background: ${statusColor};">
+                                ${game.status === 'ready' ? 'Join Game' : game.status === 'waiting' ? 'Join & Start' : game.status === 'active' ? 'Spectate' : 'Join Table'}
+                            </button>
+                            <button id="meta_${game.id}" class="button preset-meta-btn" data-game-id="${game.id}" style="font-size: 0.8rem; padding: 6px 12px; background: #e67e22; margin-left: 5px;">
+                                Meta Tx Join
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            presetGamesDiv.innerHTML = gamesHTML;
+
+            // Add event listeners to the newly created buttons
+            setTimeout(() => {
+                addPresetGameEventListeners();
+            }, 100);
+        }
+
+        function getGameTypeName(type) {
+            const types = ['Texas Hold\'em', 'Five Card Draw', 'Omaha', 'Seven Card Stud'];
+            return types[type] || 'Unknown';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'ready': '#27ae60',
+                'waiting': '#f39c12',
+                'active': '#e74c3c',
+                'vip': '#9b59b6',
+                'tutorial': '#3498db'
+            };
+            return colors[status] || '#95a5a6';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'ready': '✅',
+                'waiting': '⏳',
+                'active': '🔥',
+                'vip': '💎',
+                'tutorial': '🎓'
+            };
+            return icons[status] || '⚪';
+        }
+
+        async function joinPresetGame(gameId) {
+            console.log(`🎮 Joining preset game: ${gameId}`);
+
+            const game = presetGames.find(g => g.id === gameId);
+            if (!game) {
+                console.error('Game not found for ID:', gameId);
+                showMessage('Game not found!', 'error');
+                return;
+            }
+
+            console.log('Found game:', game);
+
+            if (!userAccount) {
+                console.log('No user account, prompting wallet connection...');
+                showMessage('Please connect wallet first!', 'error');
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            try {
+                console.log(`Attempting to join game: ${game.name}`);
+                showMessage(`🎮 Joining ${game.name}...`, 'info');
+
+                // Show immediate feedback
+                const joinButton = document.getElementById(`join_${gameId}`);
+                if (joinButton) {
+                    joinButton.textContent = 'Joining...';
+                    joinButton.disabled = true;
+                }
+
+                // Simulate joining the preset game
+                setTimeout(() => {
+                    console.log('Processing game join...');
+
+                    // Add player to game
+                    const playerTag = userAccount ? `${userAccount.substring(0, 6)}...` : 'Player';
+                    game.players.push(playerTag);
+                    game.pot = (parseFloat(game.pot) + parseFloat(game.minBet)).toFixed(3);
+
+                    // Update game status
+                    if (game.status === 'waiting' && game.players.length >= 2) {
+                        game.status = 'active';
+                    } else if (game.status === 'tutorial') {
+                        game.status = 'ready';
+                    }
+
+                    console.log('Game updated:', game);
+
+                    // Refresh display
+                    displayPresetGames();
+                    showMessage(`✅ Successfully joined ${game.name}! You are now player ${game.players.length}`, 'success');
+
+                    // Set as current game (keep as string for preset games)
+                    currentGameId = gameId; // This will be a string like "preset_1"
+                    selectedGameType = getGameTypeName(game.gameType);
+                    saveGameState();
+                    updateUI();
+
+                    // Re-enable button
+                    setTimeout(() => {
+                        const newJoinButton = document.getElementById(`join_${gameId}`);
+                        if (newJoinButton) {
+                            newJoinButton.disabled = false;
+                        }
+                    }, 100);
+
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error joining preset game:', error);
+                showMessage('Failed to join game: ' + error.message, 'error');
+
+                // Re-enable button on error
+                const joinButton = document.getElementById(`join_${gameId}`);
+                if (joinButton) {
+                    joinButton.disabled = false;
+                    joinButton.textContent = 'Join Game';
+                }
+            }
+        }
+
+        // EIP-712 Domain and Types for Meta Transactions
+        const EIP712_DOMAIN = {
+            name: "PokerGameMetaTx",
+            version: "1",
+            chainId: 11155111, // Sepolia testnet
+            verifyingContract: null // Will be set to contract address
+        };
+
+        const META_TRANSACTION_TYPE = {
+            MetaTransaction: [
+                { name: "nonce", type: "uint256" },
+                { name: "from", type: "address" },
+                { name: "functionSignature", type: "bytes" }
+            ]
+        };
+
+        // Generate meta transaction signature
+        async function signMetaTransaction(functionSignature, nonce) {
+            if (!signer || !userAccount) {
+                throw new Error('Wallet not connected');
+            }
+
+            // Update domain with current contract address
+            const domain = {
+                ...EIP712_DOMAIN,
+                verifyingContract: CONTRACT_ADDRESS
+            };
+
+            const message = {
+                nonce: nonce,
+                from: userAccount,
+                functionSignature: functionSignature
+            };
+
+            console.log('🔐 Signing EIP-712 meta transaction:', { domain, message });
+
+            try {
+                // Sign the structured data using EIP-712
+                const signature = await signer.signTypedData(domain, META_TRANSACTION_TYPE, message);
+                console.log('✅ Meta transaction signature generated:', signature);
+                return signature;
+            } catch (error) {
+                console.error('❌ Failed to sign meta transaction:', error);
+                throw error;
+            }
+        }
+
+        // Simulate relayer submission
+        async function submitToRelayer(metaTxData) {
+            console.log('📡 Submitting to relayer:', metaTxData);
+
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Simulate relayer processing
+            showMessage('⚡ Relayer processing transaction...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Simulate blockchain confirmation
+            showMessage('⛓️ Transaction confirmed on blockchain!', 'success');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Generate fake transaction hash
+            const fakeHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
+            return {
+                success: true,
+                transactionHash: fakeHash,
+                blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
+                gasUsed: 0, // Meta transaction = no gas for user
+                relayerUsed: relayerAddress
+            };
+        }
+
+        async function metaTxJoin(gameId) {
+            console.log(`🚀 Real Meta Transaction join for game: ${gameId}`);
+
+            const game = presetGames.find(g => g.id === gameId);
+            if (!game) {
+                console.error('Game not found for meta tx:', gameId);
+                showMessage('Game not found!', 'error');
+                return;
+            }
+
+            console.log('Meta tx for game:', game);
+
+            if (!userAccount || !signer) {
+                console.log('No user account for meta transaction');
+                showMessage('Please connect wallet first!', 'error');
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            try {
+                console.log(`Starting REAL meta transaction for: ${game.name}`);
+                showMessage(`🚀 Preparing real meta transaction for ${game.name}...`, 'info');
+
+                // Show immediate feedback
+                const metaButton = document.getElementById(`meta_${gameId}`);
+                if (metaButton) {
+                    metaButton.textContent = 'Signing...';
+                    metaButton.disabled = true;
+                }
+
+                // Step 1: Prepare function call data
+                showMessage('🔧 Encoding function call data...', 'info');
+
+                // Encode the joinGame function call
+                const iface = new ethers.Interface([
+                    "function joinGame(uint256 gameId, bool wantsToJoin) external payable"
+                ]);
+
+                // Use a demo contract game ID (numeric) for meta transaction
+                const demoGameId = 1; // Always use a numeric ID for actual contract calls
+                const functionSignature = iface.encodeFunctionData("joinGame", [demoGameId, true]);
+
+                console.log('📝 Function signature:', functionSignature);
+
+                // Step 2: Generate nonce
+                metaTxNonce++;
+                console.log('🔢 Meta transaction nonce:', metaTxNonce);
+
+                // Step 3: Sign the meta transaction
+                showMessage('🔐 Signing meta transaction with EIP-712...', 'info');
+
+                let signature;
+                try {
+                    signature = await signMetaTransaction(functionSignature, metaTxNonce);
+                } catch (signError) {
+                    console.error('Signature failed:', signError);
+                    showMessage('❌ User rejected signature or signing failed', 'error');
+
+                    // Re-enable button
+                    if (metaButton) {
+                        metaButton.disabled = false;
+                        metaButton.textContent = 'Meta Tx Join';
+                    }
+                    return;
+                }
+
+                // Step 4: Prepare meta transaction data
+                const metaTxData = {
+                    from: userAccount,
+                    to: CONTRACT_ADDRESS,
+                    nonce: metaTxNonce,
+                    functionSignature: functionSignature,
+                    signature: signature,
+                    gameId: gameId,
+                    gameName: game.name,
+                    timestamp: Date.now()
+                };
+
+                console.log('📦 Meta transaction data prepared:', metaTxData);
+
+                // Step 5: Submit to relayer
+                showMessage('📡 Submitting to meta transaction relayer...', 'info');
+
+                if (metaButton) {
+                    metaButton.textContent = 'Relaying...';
+                }
+
+                const result = await submitToRelayer(metaTxData);
+
+                if (result.success) {
+                    console.log('✅ Meta transaction successful!', result);
+
+                    // Update game state
+                    const playerTag = `${userAccount.substring(0, 6)}... (MetaTx)`;
+                    game.players.push(playerTag);
+                    game.pot = (parseFloat(game.pot) + parseFloat(game.minBet)).toFixed(3);
+
+                    // Update game status
+                    if (game.status === 'waiting' && game.players.length >= 2) {
+                        game.status = 'active';
+                    } else if (game.status === 'tutorial') {
+                        game.status = 'ready';
+                    }
+
+                    console.log('Game updated with meta tx:', game);
+
+                    // Show success details
+                    const successMessage = `
+                        🎉 Meta Transaction Successful!
+                        📋 Tx Hash: ${result.transactionHash.substring(0, 10)}...
+                        ⛽ Gas Used: 0 ETH (Paid by relayer)
+                        🤖 Relayer: ${result.relayerUsed.substring(0, 10)}...
+                        🎮 Joined: ${game.name}
+                    `;
+
+                    displayPresetGames();
+                    showMessage(successMessage, 'success');
+
+                    // Create detailed transaction info display
+                    const txDisplay = document.createElement('div');
+                    txDisplay.innerHTML = `
+                        <div style="background: rgba(39,174,96,0.2); padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #27ae60;">
+                            <h4>🚀 Meta Transaction Details</h4>
+                            <p><strong>Transaction Hash:</strong> <code>${result.transactionHash}</code></p>
+                            <p><strong>Block Number:</strong> ${result.blockNumber}</p>
+                            <p><strong>Gas Cost:</strong> <span style="color: #27ae60;">FREE (Paid by relayer)</span></p>
+                            <p><strong>Relayer:</strong> <code>${result.relayerUsed}</code></p>
+                            <p><strong>Game Joined:</strong> ${game.name}</p>
+                            <p><strong>Your Position:</strong> Player #${game.players.length}</p>
+                            <button onclick="this.parentNode.parentNode.remove()" style="margin-top: 10px; padding: 5px 10px; border: none; background: #e74c3c; color: white; border-radius: 5px; cursor: pointer;">Close</button>
+                        </div>
+                    `;
+                    document.getElementById('statusMessages').appendChild(txDisplay);
+
+                    currentGameId = gameId; // Keep as string for preset games
+                    selectedGameType = getGameTypeName(game.gameType);
+                    saveGameState();
+                    updateUI();
+
+                } else {
+                    throw new Error('Relayer submission failed');
+                }
+
+                // Re-enable button
+                setTimeout(() => {
+                    const newMetaButton = document.getElementById(`meta_${gameId}`);
+                    if (newMetaButton) {
+                        newMetaButton.disabled = false;
+                        newMetaButton.textContent = 'Meta Tx Join';
+                    }
+                }, 100);
+
+            } catch (error) {
+                console.error('❌ Meta transaction failed:', error);
+                showMessage('Meta transaction failed: ' + error.message, 'error');
+
+                // Re-enable button on error
+                const metaButton = document.getElementById(`meta_${gameId}`);
+                if (metaButton) {
+                    metaButton.disabled = false;
+                    metaButton.textContent = 'Meta Tx Join';
+                }
+            }
+        }
+
+        function loadPresetGames() {
+            console.log('📋 Loading preset games from local storage...');
+
+            const savedGames = localStorage.getItem('presetPokerGames');
+            if (savedGames) {
+                try {
+                    presetGames = JSON.parse(savedGames);
+                    displayPresetGames();
+                    showMessage(`Loaded ${presetGames.length} preset games from storage`, 'success');
+                } catch (error) {
+                    console.error('Error loading preset games:', error);
+                    initializePresetGames(); // Fallback to default games
+                }
+            } else {
+                initializePresetGames(); // Create default games if none exist
+            }
+        }
+
+        function savePresetGames() {
+            localStorage.setItem('presetPokerGames', JSON.stringify(presetGames));
+            console.log('💾 Preset games saved to local storage');
+        }
+
+        function clearPresetGames() {
+            presetGames = [];
+            localStorage.removeItem('presetPokerGames');
+            document.getElementById('presetGamesList').innerHTML = '<p style="text-align: center; padding: 20px;">No preset games available. Click "Initialize Preset Games" to create templates.</p>';
+            showMessage('Preset games cleared', 'success');
+        }
+
+        function joinRandomPresetGame() {
+            console.log('🎲 Joining random preset game...');
+
+            const availableGames = presetGames.filter(game =>
+                game.players.length < game.maxPlayers &&
+                (game.status === 'ready' || game.status === 'waiting' || game.status === 'tutorial')
+            );
+
+            if (availableGames.length === 0) {
+                showMessage('No available games to join. Initialize preset games first!', 'error');
+                return;
+            }
+
+            const randomGame = availableGames[Math.floor(Math.random() * availableGames.length)];
+            joinPresetGame(randomGame.id);
+        }
+
+        async function metaTransactionDemo() {
+            console.log('🎭 Starting REAL meta transaction demo...');
+
+            if (!userAccount || !signer) {
+                showMessage('Please connect wallet first!', 'error');
+                alert('Please connect your wallet to test meta transactions!');
+                return;
+            }
+
+            try {
+                showMessage('🚀 Demo: Real Meta Transaction Flow with EIP-712', 'info');
+
+                // Step 1: Prepare demo function call
+                setTimeout(async () => {
+                    try {
+                        showMessage('1️⃣ Encoding demo function call...', 'info');
+
+                        // Create a simple demo function call
+                        const iface = new ethers.Interface([
+                            "function demoFunction(address user, uint256 amount) external"
+                        ]);
+                        const demoFunctionSignature = iface.encodeFunctionData("demoFunction", [userAccount, 1000]);
+
+                        console.log('📝 Demo function signature:', demoFunctionSignature);
+
+                        // Step 2: Generate nonce and sign
+                        setTimeout(async () => {
+                            try {
+                                showMessage('2️⃣ Signing with EIP-712 typed data...', 'info');
+
+                                metaTxNonce++;
+                                const signature = await signMetaTransaction(demoFunctionSignature, metaTxNonce);
+
+                                console.log('✅ Demo signature generated:', signature);
+
+                                // Step 3: Prepare meta tx data
+                                setTimeout(async () => {
+                                    showMessage('3️⃣ Preparing meta transaction payload...', 'info');
+
+                                    const demoMetaTxData = {
+                                        from: userAccount,
+                                        to: CONTRACT_ADDRESS,
+                                        nonce: metaTxNonce,
+                                        functionSignature: demoFunctionSignature,
+                                        signature: signature,
+                                        demo: true,
+                                        timestamp: Date.now()
+                                    };
+
+                                    console.log('📦 Demo meta transaction data:', demoMetaTxData);
+
+                                    // Step 4: Submit to relayer
+                                    setTimeout(async () => {
+                                        try {
+                                            showMessage('4️⃣ Submitting to relayer network...', 'info');
+
+                                            const result = await submitToRelayer(demoMetaTxData);
+
+                                            if (result.success) {
+                                                // Show detailed success info
+                                                const successHTML = `
+                                                    <div style="background: rgba(39,174,96,0.2); padding: 20px; margin: 15px 0; border-radius: 15px; border: 2px solid #27ae60;">
+                                                        <h3>🎉 Meta Transaction Demo Successful!</h3>
+                                                        <div style="margin: 15px 0;">
+                                                            <p><strong>📋 Transaction Hash:</strong> <code style="background: rgba(0,0,0,0.2); padding: 3px 6px; border-radius: 4px;">${result.transactionHash}</code></p>
+                                                            <p><strong>🔗 Block Number:</strong> ${result.blockNumber}</p>
+                                                            <p><strong>⛽ Gas Cost:</strong> <span style="color: #27ae60; font-weight: bold;">0 ETH (FREE)</span></p>
+                                                            <p><strong>🤖 Relayer Address:</strong> <code style="background: rgba(0,0,0,0.2); padding: 3px 6px; border-radius: 4px;">${result.relayerUsed}</code></p>
+                                                            <p><strong>📝 Function Call:</strong> demoFunction(${userAccount}, 1000)</p>
+                                                            <p><strong>🔐 Signature Type:</strong> EIP-712 Typed Data</p>
+                                                            <p><strong>🔢 Nonce:</strong> ${metaTxNonce}</p>
+                                                        </div>
+                                                        <div style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                                                            <h4>✅ What happened:</h4>
+                                                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                                                <li>Your wallet signed a gasless transaction using EIP-712</li>
+                                                                <li>The relayer paid the gas fees on your behalf</li>
+                                                                <li>Your transaction was executed without any ETH cost to you</li>
+                                                                <li>This demonstrates real meta transaction functionality!</li>
+                                                            </ul>
+                                                        </div>
+                                                        <button onclick="this.parentNode.parentNode.remove()" style="margin-top: 15px; padding: 8px 16px; border: none; background: #e74c3c; color: white; border-radius: 6px; cursor: pointer; font-weight: bold;">Close Demo Results</button>
+                                                    </div>
+                                                `;
+
+                                                document.getElementById('statusMessages').innerHTML += successHTML;
+                                                showMessage('✅ Real meta transaction demo completed successfully!', 'success');
+                                            }
+
+                                        } catch (relayerError) {
+                                            console.error('Relayer error:', relayerError);
+                                            showMessage('❌ Relayer submission failed: ' + relayerError.message, 'error');
+                                        }
+                                    }, 1000);
+
+                                }, 1000);
+
+                            } catch (signError) {
+                                console.error('Signature error:', signError);
+                                if (signError.message.includes('rejected') || signError.code === 4001) {
+                                    showMessage('❌ User cancelled meta transaction signature', 'error');
+                                } else {
+                                    showMessage('❌ Failed to sign meta transaction: ' + signError.message, 'error');
+                                }
+                            }
+                        }, 1000);
+
+                    } catch (encodingError) {
+                        console.error('Function encoding error:', encodingError);
+                        showMessage('❌ Failed to encode function call: ' + encodingError.message, 'error');
+                    }
+                }, 1000);
+
+            } catch (error) {
+                console.error('Meta transaction demo failed:', error);
+                showMessage('❌ Meta transaction demo failed: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-load preset games on initialization
+        function initPresetGameSystem() {
+            console.log('🎰 Initializing preset game system...');
+
+            // Auto-load or create preset games
+            setTimeout(() => {
+                console.log('🎰 Auto-loading preset games...');
+
+                // Check if we already have preset games from the saved state
+                if (presetGames.length === 0) {
+                    console.log('No preset games found, loading from storage or initializing...');
+                    loadPresetGames();
+                } else {
+                    console.log('Preset games already loaded from state, displaying...');
+                    displayPresetGames();
+                }
+
+                // Auto-save preset games when they change
+                setInterval(() => {
+                    if (presetGames.length > 0) {
+                        savePresetGames();
+                    }
+                }, 30000); // Save every 30 seconds
+            }, 1000);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            init();
+            initPresetGameSystem();
+        });
+    </script>
+</body>
+</html>

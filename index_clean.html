@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Poker Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .button.primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .game-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .status-display {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .poker-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .poker-option {
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .poker-option:hover, .poker-option.selected {
+            border-color: #f5576c;
+            background: rgba(245,87,108,0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: rgba(255,107,107,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #51cf66;
+            background: rgba(81,207,102,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🃏 Privacy Poker Game</h1>
+            <p>Secure poker game using privacy-preserving technology</p>
+        </div>
+
+        <!-- Wallet Connection Section -->
+        <div class="card">
+            <h2>🔗 Wallet Connection</h2>
+            <div class="status-display">
+                <p><strong>Status:</strong> <span id="walletStatus">Not Connected</span></p>
+                <p><strong>Account:</strong> <span id="accountDisplay">-</span></p>
+                <p><strong>Current Address:</strong> <code id="currentContractAddress">0xD887D78d1A3Bad4981187effc97135C02c1D0961</code></p>
+            </div>
+            <div class="game-controls">
+                <button id="connectWallet" class="button primary">Connect Wallet</button>
+                <button id="disconnectWallet" class="button">Disconnect</button>
+            </div>
+        </div>
+
+        <!-- Contract Deployment Section -->
+        <div class="card">
+            <h2>📋 Contract Deployment</h2>
+            <div class="poker-options">
+                <div class="poker-option" data-type="quick">
+                    <h3>⚡ Quick Game</h3>
+                    <p>2-4 players, small stakes</p>
+                    <button id="quickDeployBtn" class="button primary">Quick Deploy</button>
+                </div>
+                <div class="poker-option" data-type="tournament">
+                    <h3>🏆 Tournament</h3>
+                    <p>6-8 players, higher stakes</p>
+                    <button id="tournamentDeployBtn" class="button primary">Tournament Deploy</button>
+                </div>
+                <div class="poker-option" data-type="custom">
+                    <h3>⚙️ Custom Game</h3>
+                    <p>Custom settings</p>
+                    <button id="customDeployBtn" class="button primary">Custom Deploy</button>
+                </div>
+            </div>
+            <div class="game-controls">
+                <button id="resetContractBtn" class="button" style="background: #ef4444;">Reset Contract Address</button>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div class="card">
+            <h2>🎮 Game Interface</h2>
+            <div class="status-display">
+                <p><strong>Game ID:</strong> <span id="currentGameId">-</span></p>
+                <p><strong>Game Type:</strong> <span id="gameType">-</span></p>
+                <p><strong>Players:</strong> <span id="playerCount">0</span></p>
+                <p><strong>Status:</strong> <span id="gameStatus">No active game</span></p>
+            </div>
+
+            <div class="game-controls">
+                <button id="createGame" class="button">Create New Game</button>
+                <button id="joinGame" class="button">Join Existing Game</button>
+                <button id="leaveGame" class="button">Leave Game</button>
+            </div>
+
+            <!-- Poker Actions -->
+            <div class="game-controls">
+                <button id="callBtn" class="button">Call</button>
+                <button id="raiseBtn" class="button">Raise</button>
+                <button id="foldBtn" class="button">Fold</button>
+                <button id="checkBtn" class="button">Check</button>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessages"></div>
+    </div>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script>
+        // Contract ABI
+        const CONTRACT_ABI = [
+            "function createGame(uint8 gameType, uint256 maxPlayers, uint256 betAmount) external payable returns (uint256)",
+            "function joinGame(uint256 gameId, bool autoPlay) external payable",
+            "function makeMove(uint256 gameId, bool call, bool raise, bool fold) external payable",
+            "function leaveGame(uint256 gameId) external",
+            "function getGameInfo(uint256 gameId) external view returns (tuple(uint256 id, uint256 maxPlayers, uint256 currentPlayers, uint256 totalPot, uint256 betAmount, uint8 gameType, bool isActive, bool isStarted, address[] players, uint256 round, uint256 timestamp))",
+            "function getPlayerCards(uint256 gameId, address player) external view returns (uint256[])",
+            "function checkHandStrength(uint256 gameId, address player, bool isBluffing) external view returns (uint256)",
+            "function getPlayerInGame(uint256 gameId, address player) external view returns (uint256)",
+            "event GameCreated(uint256 indexed gameId, uint8 gameType, uint256 maxPlayers, uint256 betAmount)",
+            "event PlayerJoined(uint256 indexed gameId, address indexed player, uint256 timestamp)",
+            "event PlayerMoved(uint256 indexed gameId, address indexed player, uint256 moveId, uint256 timestamp)",
+            "event GameEnded(uint256 indexed gameId, address indexed winner, uint256 prize)"
+        ];
+
+        // Contract bytecode for deployment
+        const CONTRACT_BYTECODE = "0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610123806100606000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80638da5cb5b14602d575b600080fd5b6000546040516001600160a01b03909116815260200160405180910390f3fe";
+
+        // Global variables
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let userAccount = null;
+        let currentGameId = null;
+        let selectedGameType = null;
+        let contractDeployed = false;
+
+        // Contract address management
+        let CONTRACT_ADDRESS = localStorage.getItem('pokerContractAddress') || "0xD887D78d1A3Bad4981187effc97135C02c1D0961";
+
+        // Initialize the application
+        async function init() {
+            console.log("Initializing Privacy Poker Game...");
+
+            // Update UI with current contract address
+            const addressElement = document.getElementById('currentContractAddress');
+            if (addressElement) {
+                addressElement.textContent = CONTRACT_ADDRESS;
+            }
+
+            setupEventListeners();
+            await checkExistingContract();
+            updateUI();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            console.log("Setting up event listeners...");
+
+            // Helper function to safely add event listeners
+            function safeAddListener(id, eventType, handler) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener(eventType, handler);
+                    console.log(`✓ Event listener added for ${id}`);
+                } else {
+                    console.warn(`⚠️ Element not found: ${id}`);
+                }
+            }
+
+            // Wallet buttons
+            safeAddListener('connectWallet', 'click', connectWallet);
+            safeAddListener('disconnectWallet', 'click', disconnectWallet);
+
+            // Deployment buttons
+            safeAddListener('quickDeployBtn', 'click', quickDeploy);
+            safeAddListener('tournamentDeployBtn', 'click', tournamentDeploy);
+            safeAddListener('customDeployBtn', 'click', customDeploy);
+            safeAddListener('resetContractBtn', 'click', resetContract);
+
+            // Game option selection
+            const pokerOptions = document.querySelectorAll('.poker-option');
+            console.log(`Found ${pokerOptions.length} poker options`);
+            pokerOptions.forEach(option => {
+                option.addEventListener('click', selectGameType);
+            });
+
+            // Game controls
+            safeAddListener('createGame', 'click', createNewGame);
+            safeAddListener('joinGame', 'click', joinExistingGame);
+            safeAddListener('leaveGame', 'click', leaveGame);
+
+            // Poker actions
+            safeAddListener('callBtn', 'click', () => makeMove(true, false, false));
+            safeAddListener('raiseBtn', 'click', () => makeMove(false, true, false));
+            safeAddListener('foldBtn', 'click', () => makeMove(false, false, true));
+            safeAddListener('checkBtn', 'click', () => makeMove(true, false, false));
+
+            console.log("Event listeners setup completed");
+        }
+
+        // Wallet connection functions
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    signer = provider.getSigner();
+                    userAccount = await signer.getAddress();
+
+                    updateUI();
+                    showMessage('Wallet connected successfully!', 'success');
+
+                    // Check if contract exists at the current address
+                    await checkExistingContract();
+                } else {
+                    showMessage('MetaMask not found. Please install MetaMask.', 'error');
+                }
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                showMessage('Failed to connect wallet: ' + error.message, 'error');
+            }
+        }
+
+        async function disconnectWallet() {
+            provider = null;
+            signer = null;
+            contract = null;
+            userAccount = null;
+            contractDeployed = false;
+            updateUI();
+            showMessage('Wallet disconnected', 'success');
+        }
+
+        // Contract deployment functions
+        async function quickDeploy() {
+            await deployContract(0, 4, ethers.utils.parseEther("0.01"));
+        }
+
+        async function tournamentDeploy() {
+            await deployContract(1, 8, ethers.utils.parseEther("0.1"));
+        }
+
+        async function customDeploy() {
+            const gameType = prompt("Enter game type (0-3):");
+            const maxPlayers = prompt("Enter max players (2-8):");
+            const betAmount = prompt("Enter bet amount in ETH:");
+
+            if (gameType !== null && maxPlayers !== null && betAmount !== null) {
+                await deployContract(parseInt(gameType), parseInt(maxPlayers), ethers.utils.parseEther(betAmount));
+            }
+        }
+
+        async function deployContract(gameType, maxPlayers, betAmount) {
+            if (!signer) {
+                showMessage('Please connect your wallet first', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Deploying contract...', 'info');
+
+                const factory = new ethers.ContractFactory(CONTRACT_ABI, CONTRACT_BYTECODE, signer);
+                const deployedContract = await factory.deploy();
+                await deployedContract.deployed();
+
+                CONTRACT_ADDRESS = deployedContract.address;
+                localStorage.setItem('pokerContractAddress', CONTRACT_ADDRESS);
+
+                // Update UI
+                document.getElementById('currentContractAddress').textContent = CONTRACT_ADDRESS;
+
+                contract = deployedContract;
+                contractDeployed = true;
+
+                showMessage(`Contract deployed successfully at: ${CONTRACT_ADDRESS}`, 'success');
+                updateUI();
+
+            } catch (error) {
+                console.error('Deployment error:', error);
+                showMessage('Failed to deploy contract: ' + error.message, 'error');
+            }
+        }
+
+        // Reset contract address to default
+        function resetContract() {
+            const defaultAddress = "0xD887D78d1A3Bad4981187effc97135C02c1D0961";
+            CONTRACT_ADDRESS = defaultAddress;
+            localStorage.setItem('pokerContractAddress', defaultAddress);
+            document.getElementById('currentContractAddress').textContent = defaultAddress;
+            contract = null;
+            contractDeployed = false;
+            updateUI();
+            showMessage('Contract address reset to default', 'success');
+        }
+
+        // Check if contract exists at address
+        async function checkExistingContract() {
+            if (!provider) return;
+
+            try {
+                const code = await provider.getCode(CONTRACT_ADDRESS);
+                contractDeployed = code !== '0x';
+
+                if (contractDeployed) {
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer || provider);
+                    showMessage('Connected to existing contract', 'success');
+                } else {
+                    contract = null;
+                    showMessage('No contract found at current address', 'info');
+                }
+            } catch (error) {
+                console.error('Contract check error:', error);
+                contractDeployed = false;
+            }
+        }
+
+        // Game functions
+        function selectGameType(event) {
+            // Remove selection from all options
+            document.querySelectorAll('.poker-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Add selection to clicked option
+            event.currentTarget.classList.add('selected');
+            selectedGameType = event.currentTarget.dataset.type;
+            showMessage(`Selected: ${selectedGameType} game`, 'info');
+        }
+
+        async function createNewGame() {
+            if (!contract) {
+                showMessage('No contract deployed. Please deploy a contract first.', 'error');
+                return;
+            }
+
+            try {
+                const gameType = selectedGameType ? ['quick', 'tournament', 'custom'].indexOf(selectedGameType) : 0;
+                const maxPlayers = gameType === 1 ? 8 : 4;
+                const betAmount = ethers.utils.parseEther(gameType === 1 ? "0.1" : "0.01");
+
+                showMessage('Creating new game...', 'info');
+                const tx = await contract.createGame(gameType, maxPlayers, betAmount, { value: betAmount });
+                await tx.wait();
+
+                showMessage('Game created successfully!', 'success');
+                // You would typically get the game ID from the transaction receipt
+                updateUI();
+            } catch (error) {
+                console.error('Create game error:', error);
+                showMessage('Failed to create game: ' + error.message, 'error');
+            }
+        }
+
+        async function joinExistingGame() {
+            const gameId = prompt("Enter Game ID to join:");
+            if (!gameId || !contract) return;
+
+            try {
+                showMessage('Joining game...', 'info');
+                const tx = await contract.joinGame(parseInt(gameId), false, { value: ethers.utils.parseEther("0.01") });
+                await tx.wait();
+
+                currentGameId = parseInt(gameId);
+                showMessage('Joined game successfully!', 'success');
+                updateUI();
+            } catch (error) {
+                console.error('Join game error:', error);
+                showMessage('Failed to join game: ' + error.message, 'error');
+            }
+        }
+
+        async function leaveGame() {
+            if (!currentGameId || !contract) return;
+
+            try {
+                showMessage('Leaving game...', 'info');
+                const tx = await contract.leaveGame(currentGameId);
+                await tx.wait();
+
+                currentGameId = null;
+                showMessage('Left game successfully!', 'success');
+                updateUI();
+            } catch (error) {
+                console.error('Leave game error:', error);
+                showMessage('Failed to leave game: ' + error.message, 'error');
+            }
+        }
+
+        async function makeMove(call, raise, fold) {
+            if (!currentGameId || !contract) {
+                showMessage('Not in any game', 'error');
+                return;
+            }
+
+            try {
+                const action = call ? 'call' : raise ? 'raise' : 'fold';
+                showMessage(`Making move: ${action}...`, 'info');
+
+                const value = raise ? ethers.utils.parseEther("0.01") : 0;
+                const tx = await contract.makeMove(currentGameId, call, raise, fold, { value });
+                await tx.wait();
+
+                showMessage(`Move completed: ${action}`, 'success');
+                updateUI();
+            } catch (error) {
+                console.error('Make move error:', error);
+                showMessage('Failed to make move: ' + error.message, 'error');
+            }
+        }
+
+        // UI update functions
+        function updateUI() {
+            // Update wallet status
+            const walletStatus = document.getElementById('walletStatus');
+            const accountDisplay = document.getElementById('accountDisplay');
+
+            if (userAccount) {
+                walletStatus.textContent = 'Connected';
+                accountDisplay.textContent = userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+            } else {
+                walletStatus.textContent = 'Not Connected';
+                accountDisplay.textContent = '-';
+            }
+
+            // Update game info
+            const gameIdDisplay = document.getElementById('currentGameId');
+            const gameTypeDisplay = document.getElementById('gameType');
+            const gameStatusDisplay = document.getElementById('gameStatus');
+
+            gameIdDisplay.textContent = currentGameId || '-';
+            gameTypeDisplay.textContent = selectedGameType || '-';
+
+            if (contractDeployed) {
+                gameStatusDisplay.textContent = currentGameId ? 'In Game' : 'Ready to play';
+            } else {
+                gameStatusDisplay.textContent = 'Contract not deployed';
+            }
+        }
+
+        function showMessage(message, type = 'info') {
+            const messagesContainer = document.getElementById('statusMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+
+            messagesContainer.appendChild(messageDiv);
+
+            // Auto-remove message after 5 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 5000);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

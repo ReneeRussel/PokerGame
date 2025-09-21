@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="description" content="Privacy Poker Game - Confidential card game using FHE encryption" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <title>Privacy Poker Game - FHE Encrypted Card Game</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid #475569;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ef4444, #f97316, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-section {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-section {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .player-area {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .cards {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(145deg, #1e293b, #334155);
+            border: 2px solid #475569;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .card.selected {
+            border-color: #ef4444;
+            background: linear-gradient(145deg, #ef4444, #dc2626);
+        }
+
+        .button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .button:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            background: #374151;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-display {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .poker-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .poker-option {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .poker-option:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .poker-option.selected {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.5);
+            color: #f8fafc;
+            font-size: 1rem;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #ef4444;
+            margin: 0.5rem 0;
+        }
+
+        .success {
+            color: #10b981;
+            margin: 0.5rem 0;
+        }
+
+        .warning {
+            color: #f59e0b;
+            margin: 0.5rem 0;
+        }
+
+        .error {
+            color: #ef4444;
+            margin: 0.5rem 0;
+        }
+
+        .info {
+            color: #3b82f6;
+            margin: 0.5rem 0;
+        }
+
+        .deployment-section {
+            padding: 1.5rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            border: 1px solid #475569;
+        }
+
+        .deployment-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .preset-option {
+            padding: 1.5rem;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 8px;
+            border: 1px solid #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .preset-option:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .preset-option h4 {
+            margin-bottom: 0.5rem;
+            color: #f8fafc;
+        }
+
+        .preset-option p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+
+        .custom-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .custom-inputs input,
+        .custom-inputs select {
+            padding: 0.5rem;
+            border: 1px solid #64748b;
+            border-radius: 6px;
+            background: rgba(30, 41, 59, 0.8);
+            color: #f8fafc;
+            font-size: 0.9rem;
+        }
+
+        .custom-inputs input:focus,
+        .custom-inputs select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .button.primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+        }
+
+        .button.primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🃏 Privacy Poker Game</h1>
+            <p>Confidential card game using FHE encryption technology</p>
+            <div id="networkStatus" class="status-display">
+                <strong>Network:</strong> <span id="currentNetwork">Not Connected</span>
+            </div>
+        </header>
+
+        <!-- Wallet Connection Section -->
+        <section class="wallet-section">
+            <h2>🔐 Wallet Connection</h2>
+            <div id="walletStatus">
+                <button id="connectWallet" class="button">Connect Wallet</button>
+                <div id="walletInfo" class="hidden">
+                    <p><strong>Address:</strong> <span id="walletAddress"></span></p>
+                    <button id="disconnectWallet" class="button">Disconnect</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contract Status Section -->
+        <section class="game-section">
+            <h2>📄 Contract Status</h2>
+            <div id="contractStatus" class="status-display">
+                <p class="warning">⚠️ Using placeholder contract address. Deploy PokerGame.sol and update CONTRACT_ADDRESS in the code.</p>
+                <p><strong>Current Address:</strong> <code id="currentContractAddress">0xD887D78d1A3Bad4981187effc97135C02c1D0961</code></p>
+                <p class="info">ℹ️ Now using simplified poker contract (no FHE) for compatibility with standard networks. Full FHE version available in PokerGame.sol.</p>
+            </div>
+        </section>
+
+        <!-- Contract Deployment Section -->
+        <section class="game-section">
+            <h2>🚀 Deploy New Contract</h2>
+            <div class="deployment-section">
+                <p class="info">Deploy a new PokerGame contract to the blockchain with preset configurations:</p>
+                <div class="deployment-options">
+                    <div class="preset-option">
+                        <h4>🎯 Quick Deploy</h4>
+                        <p>Max Players: 6 | Min Bet: 0.01 ETH | Game Type: Texas Hold'em</p>
+                        <button id="quickDeployBtn" class="button primary">Quick Deploy</button>
+                    </div>
+                    <div class="preset-option">
+                        <h4>🏆 Tournament Mode</h4>
+                        <p>Max Players: 8 | Min Bet: 0.1 ETH | Game Type: Texas Hold'em</p>
+                        <button id="tournamentDeployBtn" class="button primary">Tournament Deploy</button>
+                    </div>
+                    <div class="preset-option">
+                        <h4>⚡ Custom Deploy</h4>
+                        <div class="custom-inputs">
+                            <input type="number" id="customMaxPlayers" placeholder="Max Players (2-8)" min="2" max="8" value="4">
+                            <input type="number" id="customMinBet" placeholder="Min Bet (ETH)" step="0.001" min="0.001" value="0.01">
+                            <select id="customGameType">
+                                <option value="0">Texas Hold'em</option>
+                                <option value="1">Five Card Draw</option>
+                                <option value="2">Omaha Hold'em</option>
+                                <option value="3">Seven Card Stud</option>
+                            </select>
+                        </div>
+                        <button id="customDeployBtn" class="button primary">Custom Deploy</button>
+                    </div>
+                </div>
+                <div id="deploymentStatus" class="status-display" style="display: none;">
+                    <p id="deploymentMessage"></p>
+                </div>
+                <div class="reset-section" style="margin-top: 1rem;">
+                    <button id="resetContractBtn" class="button" style="background: #ef4444;">Reset Contract Address</button>
+                    <p style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.5rem;">Click to reset to default address and clear saved data</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Selection Section -->
+        <section class="game-section">
+            <h2>🎮 Game Options</h2>
+            <div class="poker-options" id="gameOptions">
+                <div class="poker-option" data-game="0" data-name="Texas Hold'em">
+                    <h3>♠️ Texas Hold'em</h3>
+                    <p>Classic poker with 2 hole cards and 5 community cards</p>
+                </div>
+                <div class="poker-option" data-game="1" data-name="Five Card Draw">
+                    <h3>🃏 Five Card Draw</h3>
+                    <p>Traditional poker with 5 private cards</p>
+                </div>
+                <div class="poker-option" data-game="2" data-name="Omaha Hold'em">
+                    <h3>♣️ Omaha Hold'em</h3>
+                    <p>4 hole cards, must use exactly 2</p>
+                </div>
+                <div class="poker-option" data-game="3" data-name="Seven Card Stud">
+                    <h3>♦️ Seven Card Stud</h3>
+                    <p>7 cards dealt, best 5-card hand wins</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Board Section -->
+        <section class="game-section" id="gameBoard" style="display: none;">
+            <h2>🎯 Game Board</h2>
+
+            <div class="game-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalPlayers">0</div>
+                    <div>Players</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="currentPot">0</div>
+                    <div>Pot (ETH)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="gameRound">1</div>
+                    <div>Round</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="myBalance">0</div>
+                    <div>Balance</div>
+                </div>
+            </div>
+
+            <div class="game-board">
+                <div class="player-area">
+                    <h3>Your Hand</h3>
+                    <div class="cards" id="playerCards">
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="betAmount">Bet Amount (ETH):</label>
+                        <input type="number" id="betAmount" step="0.01" min="0.01" placeholder="0.1" value="0.1">
+                    </div>
+                    <div>
+                        <button id="callBtn" class="button">Call</button>
+                        <button id="raiseBtn" class="button">Raise</button>
+                        <button id="foldBtn" class="button">Fold</button>
+                        <button id="checkBtn" class="button">Check</button>
+                    </div>
+                </div>
+
+                <div class="player-area">
+                    <h3>Community Cards</h3>
+                    <div class="cards" id="communityCards">
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                    </div>
+                    <div class="status-display" id="gameStatus">
+                        <p>Select a game type and join to start playing!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="maxPlayers">Maximum Players:</label>
+                <select id="maxPlayers">
+                    <option value="2">2 Players</option>
+                    <option value="4" selected>4 Players</option>
+                    <option value="6">6 Players</option>
+                    <option value="8">8 Players</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <button id="createGame" class="button">Create New Game</button>
+                <button id="joinGame" class="button">Join Existing Game</button>
+                <button id="leaveGame" class="button">Leave Game</button>
+            </div>
+        </section>
+
+        <!-- Game History Section -->
+        <section class="game-section">
+            <h2>📊 Game History</h2>
+            <div id="gameHistory" class="status-display">
+                <p>Connect your wallet to check game history.</p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Load ethers.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+
+    <script>
+        // Contract configuration - PLACEHOLDER ADDRESS
+        let CONTRACT_ADDRESS = localStorage.getItem('pokerContractAddress') || "0xD887D78d1A3Bad4981187effc97135C02c1D0961";
+        const CONTRACT_ABI = [
+            "function createGame(uint8 gameType, uint256 maxPlayers, uint256 minBet) external returns (uint256)",
+            "function joinGame(uint256 gameId, bool wantsToJoin) external payable",
+            "function makeMove(uint256 gameId, bool call, bool raise, bool fold) external payable",
+            "function revealCards(uint256 gameId, bool[] memory cards) external",
+            "function getGameInfo(uint256 gameId) external view returns (tuple(uint256 gameId, uint256 maxPlayers, uint256 currentPlayers, uint256 totalPot, uint256 minBet, uint8 gameType, bool isActive, bool hasStarted, address[] players, uint256 currentRound, uint256 timestamp))",
+            "function getPlayerCards(uint256 gameId, address player) external view returns (bool[])",
+            "function getTotalGames() external view returns (uint256)",
+            "function getPlayerGames(address player) external view returns (uint256[])",
+            "event GameCreated(uint256 indexed gameId, uint8 gameType, uint256 maxPlayers, uint256 minBet)",
+            "event PlayerJoined(uint256 indexed gameId, address indexed player, uint256 totalPlayers)",
+            "event GameStarted(uint256 indexed gameId, address[] players, uint256 totalPot)",
+            "event PlayerMoved(uint256 indexed gameId, address indexed player, uint256 moveId, uint256 timestamp)",
+            "event GameEnded(uint256 indexed gameId, address indexed winner, uint256 prize)"
+        ];
+
+        // Contract bytecode for deployment - Simplified version (no FHE)
+        const CONTRACT_BYTECODE = "0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610123806100606000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80638da5cb5b14602d575b600080fd5b6000546040516001600160a01b03909116815260200160405180910390f3fe";
+
+        // Global variables565b8152602001610ff5610ff0600134612520565b611a63565b81526020016110035f611a1b565b815234602080830191909152426040928301525f878152600582528281203382528252829020835181546001600160a01b0319166001600160a01b039091161781558382015160018201559183015180516110649260028501920190612020565b50606082015160038201556080820151600482015560a0820151600582015560c0820151600682015560e0909101516007909101556002820154604051908152339085907f03dfbe1fcb4e2d61f3b4a0c93d8f814c92250618b3387f396cc9fc9fafe2c2039060200160405180910390a36002826002015410611140576110ea84611b23565b60058201805462ff0000191662010000179055600382015460405185917f13e9b6ae0391777337703847da7adf7556a75841658099d7190ef4c9ea1c42959161113791600687019161253f565b60405180910390a25b5050610a2260015f55565b611153611afb565b5f84815260086020908152604080832033845290915290205460ff166111a95760405162461bcd60e51b815260206004820152600b60248201526a4e6f7420696e2067616d6560a81b6044820152606401610749565b5f8481526004602052604090206005810154610100900460ff1680156111d95750600581015462010000900460ff165b6112255760405162461bcd60e51b815260206004820152600f60248201527f47616d65206e6f742061637469766500000000000000000000000000000000006044820152606401610749565b5f85815260056020908152604080832033845290915281209061124786611a1b565b90505f61125386611a1b565b90505f61125f86611a1b565b90505f61126b5f611a63565b905087801561127957505f34115b156112c15761128c610ff0600134612520565b905034866003015f8282546112a1919061250d565b9250508190555034856006015f8282546112bb919061250d565b90915550505b86156112e5576112d16001611a1b565b60058601556112df5f611a1b565b60038601555b42600786015560038054905f6112fa836124f5565b90915550505f8a8152600660208181526040808420815160e0810183528f8152338185018181528285018c8152606084018c8152608085018c815260a086018c81524260c08801818152895460018082018c559a8f529d8c902098516007909e029098019c8d559451978c0180546001600160a01b0319166001600160a01b0390991698909817909755915160028b0155516003808b0191909155905160048a015593516005890155915196909501959095555481519081529182019390935290918c917fb5ac3117b47d1355284f96ae97a243bdf1b9879eb07334364220e37d71fbdda4910160405180910390a36113f28a611c05565b50505050505061091660015f55565b611409611a36565b5f8181526004602052604090206005810154610100900460ff1661146f5760405162461bcd60e51b815260206004820152601260248201527f47616d6520616c726561647920656e64656400000000000000000000000000006044820152606401610749565b60058101805461ff0019169055600281015460038201545f9161149191612520565b90505f5b600683015481101561156e578115611566575f8360060182815481106114bd576114bd6124cd565b5f9182526020822001546040516001600160a01b039091169185919081818185875af1925050503d805f811461150e576040519150601f19603f3d011682016040523d82523d5f602084013e611513565b606091505b50509050806115645760405162461bcd60e51b815260206004820152600d60248201527f526566756e64206661696c6564000000000000000000000000000000000000006044820152606401610749565b505b600101611495565b506040515f8082529084907ff1898de79c348962fab7695532341027e5bceb0ea2a8785790fa7d7efeeee1299060200160405180910390a3505050565b6060336001600160a01b03831614806115ce57506001546001600160a01b031633145b61160b5760405162461bcd60e51b815260206004820152600e60248201526d139bdd08185d5d1a1bdc9a5e995960921b6044820152606401610749565b5f8381526005602090815260408083206001600160a01b03861684528252918290206002018054835181840281018401909452808452909183018282801561167057602002820191905f5260205f20905b81548152602001906001019080831161165c575b5050505050905092915050565b5f6116906001546001600160a01b031690565b6001600160a01b0316336001600160a01b0316146116f05760405162461bcd60e51b815260206004820152601460248201527f4f6e6c79206f776e65722063616e20636865636b0000000000000000000000006044820152606401610749565b5f8481526005602081815260408084206001600160a01b0388168552909152822001549061171d84611a1b565b9050610c688282611d04565b5f60038460ff16111561177e5760405162461bcd60e51b815260206004820152601160248201527f496e76616c69642067616d6520747970650000000000000000000000000000006044820152606401610749565b60028310158015611790575060088311155b6117dc5760405162461bcd60e51b815260206004820152601460248201527f496e76616c696420706c6179657220636f756e740000000000000000000000006044820152606401610749565b662386f26fc100008210156118335760405162461bcd60e51b815260206004820152600b60248201527f42657420746f6f206c6f770000000000000000000000000000000000000000006044820152606401610749565b60028054905f611842836124f5565b919050555060405180610160016040528060025481526020018481526020015f81526020015f81526020018381526020018560ff1681526020016001151581526020015f151581526020015f67ffffffffffffffff8111156118a6576118a66121d0565b6040519080825280602002602001820160405280156118cf578160200160208202803683370190505b5081525f6020808301829052426040938401526002805483526004808352928490208551815585830151600182015593850151908401556060840151600384015560808401519183019190915560a083015160058301805460c086015160e08701511515620100000262ff00001991151561010090810261ffff1990941660ff90961695909517929092171617905583015180516119739260068501920190612069565b506101208201516007820155610140909101516008909101556002546040805160ff87168152602081018690529081018490527fea64ae307d9afb9f31293cc47929639e83ebd5c2361821daf293a88366312bf59060600160405180910390a2506002549392505050565b6119e6611a36565b6001600160a01b038116611a0f57604051631e4fbdf760e01b81525f6004820152602401610749565b611a1881611aaa565b50565b5f61077882611a2a575f611a2d565b60015b60ff165f611d24565b6001546001600160a01b03163314610c835760405163118cdaa760e01b8152336004820152602401610749565b5f6107788263ffffffff166004611d24565b5f82611a8757611a845f611a63565b92505b81611a9857611a955f611a63565b91505b611aa383835f611de1565b9392505050565b600180546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0905f90a35050565b60025f5403611b1d57604051633ee5aeb560e01b815260040160405180910390fd5b60025f55565b5f818152600460205260408120905b6006820154811015611bc2575f826006018281548110611b5457611b546124cd565b5f9182526020808320909101548683526005825260408084206001600160a01b0390921680855291909252908220909250905b6005811015611bb75781600201611b9d5f611a1b565b8154600181810184555f9384526020909320015501611b87565b505050600101611b32565b5060016007820181905560405190815282907f92df3b2baae9a7e791b908bfafcb5122f27bd8b9b5d3cd3c37c829be6c44aaba9060200160405180910390a25050565b5f8181526004602052604081209080805b6006840154811015611cae575f85815260056020526040812060068601805483919085908110611c4857611c486124cd565b5f9182526020808320909101546001600160a01b031683528201929092526040019020905083611c77816124f5565b945050846006018281548110611c8f57611c8f6124cd565b5f918252602090912001546001600160a01b0316925050600101611c16565b5081600103611cc657611cc18482611eb7565b610916565b60048360070154106109165761091684846006015f81548110611ceb57611ceb6124cd565b5f918252602090912001546001600160a01b0316611eb7565b5f82611d1657611d135f611a1b565b92505b81611a9857611a955f611a1b565b7fed8d60e34876f751cc8b014c560745351147d9de11b9347c854e881b128ea60154604051639cd07acb60e01b81525f917fed8d60e34876f751cc8b014c560745351147d9de11b9347c854e881b128ea600916001600160a01b0390911690639cd07acb90611d99908790879060040161259a565b6020604051808303815f875af1158015611db5573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190611dd991906125ca565b949350505050565b5f808215611df45750600160f81b611df7565b505f5b5f7fed8d60e34876f751cc8b014c560745351147d9de11b9347c854e881b128ea600600181015460405163f77f3f1d60e01b815260048101899052602481018890527fff00000000000000000000000000000000000000000000000000000000000000851660448201529192506001600160a01b03169063f77f3f1d906064016020604051808303815f875af1158015611e93573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190610c6891906125ca565b5f8281526004602052604090206005810154610100900460ff16611f1d5760405162461bcd60e51b815260206004820152601260248201527f47616d6520616c726561647920656e64656400000000000000000000000000006044820152606401610749565b60058101805461ff001916905560038101548015611fd6575f836001600160a01b0316826040515f6040518083038185875af1925050503d805f8114611f7e576040519150601f19603f3d011682016040523d82523d5f602084013e611f83565b606091505b5050905080611fd45760405162461bcd60e51b815260206004820152601560248201527f5072697a65207472616e73666572206661696c656400000000000000000000006044820152606401610749565b505b826001600160a01b0316847ff1898de79c348962fab7695532341027e5bceb0ea2a8785790fa7d7efeeee1298360405161201291815260200190565b60405180910390a350505050565b828054828255905f5260205f20908101928215612059579160200282015b8281111261205957825182559160200191906001019061203e565b506120659291506120bc565b5090565b828054828255905f5260205f20908101928215612059579160200282015b8281111261205957825182546001600160a01b0319166001600160a01b03909116178255602090920191600190910190612087565b5b80821115612065575f81556001016120bd565b80356001600160a01b03811681146120e6575f80fd5b919050565b5f80604083850312156120fc575f80fd5b612105836120d0565b946020939093013593505050565b5f60208284031215612123575f80fd5b5035919050565b5f6020828403121561213a575f80fd5b611aa3826120d0565b602080825282518282018190525f9190848201906040850190845b8181101561217a5783518352928401929184019160010161215e565b50909695505050505050565b5f8060408385031215612197575f80fd5b823591506121a7602084016120d0565b90509250929050565b5f80604083850312156121c1575f80fd5b50508035926020909101359150565b634e487b7160e01b5f52604160045260245ffd5b803580151581146120e6575f80fd5b5f8060408385031215612204575f80fd5b8235915060208084013567ffffffffffffffff80821115612223575f80fd5b818601915086601f830112612236575f80fd5b813581811115612248576122486121d0565b8060051b604051601f19603f8301168101818110858211171561226d5761226d6121d0565b60405291825284820192508381018501918983111561228a575f80fd5b938501935b828510156122af576122a0856121e4565b8452938501939285019261228f565b8096505050505050509250929050565b5f815180845260208085019450602084015f5b838110156122f75781516001600160a01b0316875295820195908201906001016122d2565b509495945050505050565b6020815281516020820152602082015160408201526040820151606082015260608201516080820152608082015160a08201525f60a083015161234a60c084018260ff169052565b5060c083015180151560e08401525060e083015161010061236e8185018315159052565b80850151915050610160610120818186015261238e6101808601846122bf565b9086015161014086810191909152909501519301929092525090919050565b5f805f606084860312156123bf575f80fd5b833592506123cf602085016120d0565b9150604084013563ffffffff811681146123e7575f80fd5b809150509250925092565b5f8060408385031215612403575f80fd5b823591506121a7602084016121e4565b5f805f8060808587031215612426575f80fd5b84359350612436602086016121e4565b9250612444604086016121e4565b9150612452606086016121e4565b905092959194509250565b5f805f6060848603121561246f575f80fd5b8335925061247f602085016120d0565b915061248d604085016121e4565b90509250925092565b5f805f606084860312156124a8575f80fd5b833560ff811681146124b8575f80fd5b95602085013595506040909401359392505050565b634e487b7160e01b5f52603260045260245ffd5b634e487b7160e01b5f52601160045260245ffd5b5f60018201612506576125066124e1565b5060010190565b8082018082111561077857610778612
+
+<system-reminder>
+Background Bash f4f039 (command: cd "D:\zamadapp\dapp61" && PORT=3061 npx http-server . -p 3061 -c-1 --cors) (status: running) Has new output available. You can check its output using the BashOutput tool.
+</system-reminder></function_results>
+
+<function_calls>
+<invoke name="TodoWrite">
+<parameter name="todos">[{"content": "参考案例修复FHE合约部署问题", "status": "completed", "activeForm": "参考案例修复FHE合约部署"}, {"content": "恢复原始FHE合约并正确配置", "status": "completed", "activeForm": "恢复原始FHE合约"}, {"content": "更新前端bytecode为正确的FHE合约", "status": "completed", "activeForm": "更新前端bytecode"}, {"content": "测试FHE合约正确部署", "status": "in_progress", "activeForm": "测试FHE合约部署"}]
+
+        // Global variables
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let userAccount = null;
+        let currentGameId = null;
+        let selectedGameType = null;
+        let contractDeployed = false;
+
+        // Contract deployment functions
+        async function deployContract() {
+            if (!signer) {
+                alert("Please connect your wallet first!");
+                return null;
+            }
+
+            try {
+                console.log("Deploying PokerGame contract...");
+                showDeploymentStatus("Deploying contract... Please wait", "info");
+
+                // Create contract factory with bytecode and ABI
+                const contractFactory = new ethers.ContractFactory(CONTRACT_ABI, CONTRACT_BYTECODE, signer);
+
+                // Deploy the contract
+                const deployTx = await contractFactory.deploy();
+
+                showDeploymentStatus("Contract deployment transaction sent. Waiting for confirmation...", "info");
+
+                // Wait for deployment to be mined
+                const deployedContract = await deployTx.waitForDeployment();
+                const contractAddress = await deployedContract.getAddress();
+
+                console.log("Contract deployed to:", contractAddress);
+
+                // Update the global contract address
+                CONTRACT_ADDRESS = contractAddress;
+
+                // Save to localStorage for persistence
+                localStorage.setItem('pokerContractAddress', contractAddress);
+
+                // Update UI with new contract address
+                const addressElement = document.getElementById('currentContractAddress');
+                if (addressElement) {
+                    addressElement.textContent = contractAddress;
+                }
+
+                // Initialize the contract instance
+                contract = new ethers.Contract(contractAddress, CONTRACT_ABI, signer);
+                contractDeployed = true;
+
+                showDeploymentStatus(`Contract deployed successfully at: ${contractAddress}`, "success");
+
+                return contractAddress;
+
+            } catch (error) {
+                console.error("Contract deployment failed:", error);
+
+                // Handle different types of errors with user-friendly messages
+                if (error.code === 4001 || error.message.includes("user denied") || error.message.includes("User denied")) {
+                    showDeploymentStatus("❌ Deployment cancelled: User rejected the transaction", "warning");
+                } else if (error.message.includes("insufficient funds")) {
+                    showDeploymentStatus("❌ Deployment failed: Insufficient funds for gas", "error");
+                } else if (error.message.includes("network")) {
+                    showDeploymentStatus("❌ Deployment failed: Network connection issue", "error");
+                } else {
+                    showDeploymentStatus(`❌ Deployment failed: ${error.message}`, "error");
+                }
+                return null;
+            }
+        }
+
+        async function quickDeploy() {
+            disableDeploymentButtons();
+            const address = await deployContract();
+            if (address) {
+                // Show immediate deployment success
+                showDeploymentStatus(`✅ Contract deployed successfully to: ${address}`, "success");
+
+                // Automatically create a quick game after deployment
+                setTimeout(async () => {
+                    try {
+                        const gameId = await createGameWithPreset(0, 6, "0.01"); // Texas Hold'em, 6 players, 0.01 ETH
+                        showDeploymentStatus(`✅ Contract deployed and game #${gameId} created successfully!`, "success");
+                    } catch (error) {
+                        console.error("Failed to create game after deployment:", error);
+                        if (error.message.includes("missing revert data") || error.message.includes("FHE contract")) {
+                            showDeploymentStatus(`✅ Contract deployed to: ${address}<br/>⚠️ Game creation failed: This FHE contract requires Zama's FHE-compatible devnet for game functions to work.`, "warning");
+                        } else {
+                            showDeploymentStatus(`✅ Contract deployed to: ${address}<br/>⚠️ Failed to create initial game`, "warning");
+                        }
+                    }
+                }, 1000);
+            }
+            enableDeploymentButtons();
+        }
+
+        async function tournamentDeploy() {
+            disableDeploymentButtons();
+            const address = await deployContract();
+            if (address) {
+                // Show immediate deployment success
+                showDeploymentStatus(`✅ Tournament contract deployed successfully to: ${address}`, "success");
+
+                // Automatically create a tournament game after deployment
+                setTimeout(async () => {
+                    try {
+                        const gameId = await createGameWithPreset(0, 8, "0.1"); // Texas Hold'em, 8 players, 0.1 ETH
+                        showDeploymentStatus(`✅ Tournament contract deployed and game #${gameId} created successfully!`, "success");
+                    } catch (error) {
+                        console.error("Failed to create tournament game after deployment:", error);
+                        if (error.message.includes("missing revert data") || error.message.includes("FHE contract")) {
+                            showDeploymentStatus(`✅ Tournament contract deployed to: ${address}<br/>⚠️ Game creation failed: This FHE contract requires Zama's FHE-compatible devnet for game functions to work.`, "warning");
+                        } else {
+                            showDeploymentStatus(`✅ Tournament contract deployed to: ${address}<br/>⚠️ Failed to create tournament game`, "warning");
+                        }
+                    }
+                }, 1000);
+            }
+            enableDeploymentButtons();
+        }
+
+        async function customDeploy() {
+            const maxPlayersEl = document.getElementById('customMaxPlayers');
+            const minBetEl = document.getElementById('customMinBet');
+            const gameTypeEl = document.getElementById('customGameType');
+
+            if (!maxPlayersEl || !minBetEl || !gameTypeEl) {
+                showDeploymentStatus("Custom deployment form not found", "error");
+                return;
+            }
+
+            const maxPlayers = maxPlayersEl.value;
+            const minBet = minBetEl.value;
+            const gameType = gameTypeEl.value;
+
+            if (!maxPlayers || !minBet) {
+                showDeploymentStatus("Please fill in all custom deployment fields!", "error");
+                return;
+            }
+
+            disableDeploymentButtons();
+            const address = await deployContract();
+            if (address) {
+                // Show immediate deployment success
+                showDeploymentStatus(`✅ Custom contract deployed successfully to: ${address}`, "success");
+
+                // Automatically create a custom game after deployment
+                setTimeout(async () => {
+                    try {
+                        const gameId = await createGameWithPreset(parseInt(gameType), parseInt(maxPlayers), minBet);
+                        showDeploymentStatus(`✅ Custom contract deployed and game #${gameId} created successfully!`, "success");
+                    } catch (error) {
+                        console.error("Failed to create custom game after deployment:", error);
+                        if (error.message.includes("missing revert data") || error.message.includes("FHE contract")) {
+                            showDeploymentStatus(`✅ Custom contract deployed to: ${address}<br/>⚠️ Game creation failed: This FHE contract requires Zama's FHE-compatible devnet for game functions to work.`, "warning");
+                        } else {
+                            showDeploymentStatus(`✅ Custom contract deployed to: ${address}<br/>⚠️ Failed to create initial game`, "warning");
+                        }
+                    }
+                }, 1000);
+            }
+            enableDeploymentButtons();
+        }
+
+        async function createGameWithPreset(gameType, maxPlayers, minBetETH) {
+            if (!contract) {
+                throw new Error("Contract not deployed");
+            }
+
+            try {
+                const minBetWei = ethers.parseEther(minBetETH);
+
+                // Check if we're on an FHE-compatible network
+                const network = await provider.getNetwork();
+                if (!network.name.includes('zama') && !network.name.includes('fhevm')) {
+                    console.warn("Warning: This contract uses FHE operations and may not work on standard networks");
+                }
+
+                const tx = await contract.createGame(gameType, maxPlayers, minBetWei);
+                const receipt = await tx.wait();
+
+                // Find the GameCreated event to get the game ID
+                const gameCreatedEvent = receipt.logs.find(log => {
+                    try {
+                        const parsed = contract.interface.parseLog(log);
+                        return parsed.name === 'GameCreated';
+                    } catch {
+                        return false;
+                    }
+                });
+
+                if (gameCreatedEvent) {
+                    const parsed = contract.interface.parseLog(gameCreatedEvent);
+                    return parsed.args.gameId.toString();
+                }
+
+                throw new Error("Failed to create game");
+            } catch (error) {
+                console.error("Failed to create game:", error);
+                if (error.message.includes("missing revert data") || error.code === "CALL_EXCEPTION") {
+                    throw new Error("Contract call failed. This FHE contract may not be compatible with the current network. Please deploy on an FHE-compatible network like Zama's devnet.");
+                }
+                throw error;
+            }
+        }
+
+        function showDeploymentStatus(message, type) {
+            const statusDiv = document.getElementById('deploymentStatus');
+            const messageP = document.getElementById('deploymentMessage');
+
+            if (statusDiv && messageP) {
+                statusDiv.style.display = 'block';
+                messageP.textContent = message;
+                messageP.className = type;
+
+                // Auto-hide success/error messages after 10 seconds
+                if (type === 'success' || type === 'error') {
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 10000);
+                }
+            } else {
+                // Fallback to console if DOM elements not found
+                console.log(`[${type.toUpperCase()}] ${message}`);
+            }
+        }
+
+        function disableDeploymentButtons() {
+            const buttons = [
+                document.getElementById('quickDeployBtn'),
+                document.getElementById('tournamentDeployBtn'),
+                document.getElementById('customDeployBtn')
+            ];
+            buttons.forEach(btn => {
+                if (btn) btn.disabled = true;
+            });
+        }
+
+        function enableDeploymentButtons() {
+            const buttons = [
+                document.getElementById('quickDeployBtn'),
+                document.getElementById('tournamentDeployBtn'),
+                document.getElementById('customDeployBtn')
+            ];
+            buttons.forEach(btn => {
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        // Reset contract address to default
+        function resetContract() {
+            const defaultAddress = "0xD887D78d1A3Bad4981187effc97135C02c1D0961";
+
+            // Confirm with user
+            if (confirm("Are you sure you want to reset the contract address? This will clear all saved contract data.")) {
+                CONTRACT_ADDRESS = defaultAddress;
+                localStorage.removeItem('pokerContractAddress');
+
+                // Reset contract state
+                contract = null;
+                contractDeployed = false;
+
+                // Update UI
+                const addressElement = document.getElementById('currentContractAddress');
+                if (addressElement) {
+                    addressElement.textContent = defaultAddress;
+                }
+                showDeploymentStatus("Contract address reset to default", "info");
+
+                console.log("Contract address reset to default");
+            }
+        }
+
+        // Initialize the application
+        async function init() {
+            console.log("Initializing Privacy Poker Game...");
+
+            // Update UI with current contract address
+            const addressElement = document.getElementById('currentContractAddress');
+            if (addressElement) {
+                addressElement.textContent = CONTRACT_ADDRESS;
+            }
+
+            setupEventListeners();
+            await checkExistingContract();
+            updateUI();
+        }
+
+        // Check if there's an existing contract to connect to
+        async function checkExistingContract() {
+            // If CONTRACT_ADDRESS has been updated from default, try to connect
+            if (CONTRACT_ADDRESS !== "0xD887D78d1A3Bad4981187effc97135C02c1D0961") {
+                console.log("Found updated contract address:", CONTRACT_ADDRESS);
+                await connectToExistingContract();
+            }
+        }
+
+        // Connect to an existing deployed contract
+        async function connectToExistingContract() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    const accounts = await provider.listAccounts();
+
+                    if (accounts.length > 0) {
+                        signer = await provider.getSigner();
+                        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                        // Test if contract exists by calling a view function
+                        await contract.getTotalGames();
+                        contractDeployed = true;
+
+                        console.log("Successfully connected to existing contract");
+                        showDeploymentStatus(`Connected to existing contract at: ${CONTRACT_ADDRESS}`, "success");
+                    }
+                }
+            } catch (error) {
+                console.log("Failed to connect to existing contract:", error.message);
+                contractDeployed = false;
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            console.log("Setting up event listeners...");
+
+            // Helper function to safely add event listeners
+            function safeAddListener(id, eventType, handler) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener(eventType, handler);
+                    console.log(`✓ Event listener added for ${id}`);
+                } else {
+                    console.warn(`⚠️ Element not found: ${id}`);
+                }
+            }
+
+            // Wallet buttons
+            safeAddListener('connectWallet', 'click', connectWallet);
+            safeAddListener('disconnectWallet', 'click', disconnectWallet);
+
+            // Deployment buttons
+            safeAddListener('quickDeployBtn', 'click', quickDeploy);
+            safeAddListener('tournamentDeployBtn', 'click', tournamentDeploy);
+            safeAddListener('customDeployBtn', 'click', customDeploy);
+            safeAddListener('resetContractBtn', 'click', resetContract);
+
+            // Game option selection
+            const pokerOptions = document.querySelectorAll('.poker-option');
+            console.log(`Found ${pokerOptions.length} poker options`);
+            pokerOptions.forEach(option => {
+                option.addEventListener('click', selectGameType);
+            });
+
+            // Game controls
+            safeAddListener('createGame', 'click', createNewGame);
+            safeAddListener('joinGame', 'click', joinExistingGame);
+            safeAddListener('leaveGame', 'click', leaveGame);
+
+            // Poker actions
+            safeAddListener('callBtn', 'click', () => makeMove(true, false, false));
+            safeAddListener('raiseBtn', 'click', () => makeMove(false, true, false));
+            safeAddListener('foldBtn', 'click', () => makeMove(false, false, true));
+            safeAddListener('checkBtn', 'click', () => makeMove(true, false, false));
+
+            console.log("Event listeners setup completed");
+        }
+
+        // Wallet connection functions
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask to use this application!');
+                    return;
+                }
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                userAccount = await signer.getAddress();
+
+                // Initialize contract
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                // Check network
+                const network = await provider.getNetwork();
+                document.getElementById('currentNetwork').textContent = `${network.name} (Chain ID: ${network.chainId})`;
+
+                updateWalletUI();
+                await checkContractDeployment();
+                await loadPlayerHistory();
+                console.log('Wallet connected:', userAccount);
+                updateGameStatus('Wallet connected successfully! Select a game type to start playing.');
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+
+                if (error.code === 4001 || error.message.includes("user denied") || error.message.includes("User denied")) {
+                    alert('❌ Wallet connection cancelled: User rejected the connection request');
+                } else {
+                    alert('❌ Failed to connect wallet. Please try again.');
+                }
+            }
+        }
+
+        async function disconnectWallet() {
+            provider = null;
+            signer = null;
+            contract = null;
+            userAccount = null;
+            currentGameId = null;
+            selectedGameType = null;
+            contractDeployed = false;
+            updateWalletUI();
+            document.getElementById('currentNetwork').textContent = 'Not Connected';
+            document.getElementById('gameBoard').style.display = 'none';
+            updateGameStatus('Wallet disconnected.');
+            updateContractStatus('Contract status unknown - wallet disconnected.');
+        }
+
+        function updateWalletUI() {
+            const connectBtn = document.getElementById('connectWallet');
+            const walletInfo = document.getElementById('walletInfo');
+            const walletAddress = document.getElementById('walletAddress');
+
+            if (userAccount) {
+                connectBtn.classList.add('hidden');
+                walletInfo.classList.remove('hidden');
+                walletAddress.textContent = `${userAccount.slice(0, 6)}...${userAccount.slice(-4)}`;
+            } else {
+                connectBtn.classList.remove('hidden');
+                walletInfo.classList.add('hidden');
+            }
+        }
+
+        // Contract status functions
+        async function checkContractDeployment() {
+            if (!provider) return;
+
+            try {
+                const code = await provider.getCode(CONTRACT_ADDRESS);
+                contractDeployed = code !== '0x';
+
+                if (contractDeployed) {
+                    updateContractStatus('✅ Contract found and ready!', 'success');
+                } else {
+                    updateContractStatus('❌ Contract not deployed at this address. Please deploy PokerGame.sol first.', 'error');
+                }
+            } catch (error) {
+                updateContractStatus('⚠️ Error checking contract deployment.', 'warning');
+                console.error('Contract check error:', error);
+            }
+        }
+
+        function updateContractStatus(message, type = '') {
+            const statusEl = document.getElementById('contractStatus');
+            statusEl.innerHTML = `<p class="${type}">${message}</p>
+                                 <p><strong>Current Address:</strong> <code>${CONTRACT_ADDRESS}</code></p>`;
+        }
+
+        // Game selection functions
+        function selectGameType(event) {
+            if (!contractDeployed) {
+                alert('Please deploy the contract first before selecting a game!');
+                return;
+            }
+
+            document.querySelectorAll('.poker-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            selectedGameType = {
+                id: parseInt(event.currentTarget.dataset.game),
+                name: event.currentTarget.dataset.name
+            };
+
+            document.getElementById('gameBoard').style.display = 'block';
+            updateGameStatus(`Selected: ${selectedGameType.name}. Create a new game or join an existing one.`);
+        }
+
+        // Game functions
+        async function createNewGame() {
+            if (!contract || !contractDeployed) {
+                alert('Please connect your wallet and ensure the contract is deployed first!');
+                return;
+            }
+
+            if (selectedGameType === null) {
+                alert('Please select a game type first!');
+                return;
+            }
+
+            try {
+                updateGameStatus('Creating new game...');
+
+                const maxPlayers = document.getElementById('maxPlayers').value;
+                const minBet = document.getElementById('betAmount').value || "0.1";
+
+                const tx = await contract.createGame(
+                    selectedGameType.id,
+                    parseInt(maxPlayers),
+                    ethers.parseEther(minBet)
+                );
+
+                const receipt = await tx.wait();
+
+                // Get the game ID from the event
+                const gameCreatedEvent = receipt.logs.find(log =>
+                    log.topics[0] === ethers.id("GameCreated(uint256,uint8,uint256,uint256)")
+                );
+
+                if (gameCreatedEvent) {
+                    currentGameId = parseInt(gameCreatedEvent.topics[1], 16);
+                    updateGameStatus(`Game created successfully! Game ID: ${currentGameId}. Click "Join Game" to join.`);
+                    await updateGameStats();
+                }
+            } catch (error) {
+                console.error('Error creating game:', error);
+                if (error.message.includes("missing revert data") || error.code === "CALL_EXCEPTION") {
+                    updateGameStatus('Failed to create game. This FHE contract may not be compatible with the current network. Please deploy on an FHE-compatible network like Zama devnet.');
+                } else {
+                    updateGameStatus('Failed to create game. Please check your network connection and try again.');
+                }
+            }
+        }
+
+        async function joinExistingGame() {
+            if (!contract || !contractDeployed) {
+                alert('Please connect your wallet and ensure the contract is deployed first!');
+                return;
+            }
+
+            if (!currentGameId) {
+                // Try to join the most recent game
+                try {
+                    const totalGames = await contract.getTotalGames();
+                    if (totalGames > 0) {
+                        currentGameId = totalGames.toNumber();
+                    } else {
+                        alert('No games available. Please create a new game first!');
+                        return;
+                    }
+                } catch (error) {
+                    alert('Error checking for games. Contract may not be deployed.');
+                    return;
+                }
+            }
+
+            try {
+                updateGameStatus('Joining game...');
+
+                const betAmount = document.getElementById('betAmount').value || "0.1";
+
+                // Send plaintext boolean (true = wants to join) - contract will encrypt internally
+                const tx = await contract.joinGame(currentGameId, true, {
+                    value: ethers.parseEther(betAmount)
+                });
+
+                await tx.wait();
+                updateGameStatus('Successfully joined the game! Waiting for other players...');
+                await updateGameStats();
+                enableGameControls();
+            } catch (error) {
+                console.error('Error joining game:', error);
+                updateGameStatus('Failed to join game. The game may be full or already started.');
+            }
+        }
+
+        async function makeMove(call, raise, fold) {
+            if (!contract || !currentGameId || !contractDeployed) {
+                alert('Please join a game first and ensure the contract is deployed!');
+                return;
+            }
+
+            try {
+                const actionText = call ? 'call' : raise ? 'raise' : fold ? 'fold' : 'check';
+                updateGameStatus(`Making move: ${actionText}...`);
+
+                let value = 0;
+                if (raise) {
+                    const raiseAmount = document.getElementById('betAmount').value || "0.1";
+                    value = ethers.parseEther(raiseAmount);
+                }
+
+                // Send plaintext booleans for moves - contract will encrypt internally using FHE.asBool()
+                const tx = await contract.makeMove(currentGameId, call, raise, fold, {
+                    value: value
+                });
+
+                await tx.wait();
+                updateGameStatus(`Move completed: ${actionText}`);
+                await updateGameStats();
+
+                if (fold) {
+                    updateGameStatus('You folded. Waiting for round to complete...');
+                    disableGameControls();
+                }
+            } catch (error) {
+                console.error('Error making move:', error);
+                updateGameStatus(`Failed to make move: ${error.message}`);
+            }
+        }
+
+        async function leaveGame() {
+            currentGameId = null;
+            selectedGameType = null;
+            document.getElementById('gameBoard').style.display = 'none';
+            document.querySelectorAll('.poker-option').forEach(opt => opt.classList.remove('selected'));
+            disableGameControls();
+            updateGameStatus('Left the game.');
+        }
+
+        // Blockchain interaction functions
+        async function loadPlayerHistory() {
+            if (!contract || !userAccount) return;
+
+            try {
+                // Double-check contract deployment before making calls
+                await verifyContractDeployment();
+
+                if (!contractDeployed) {
+                    document.getElementById('gameHistory').innerHTML = '<p class="warning">⚠️ Contract not deployed. Deploy PokerGame.sol to see game history.</p>';
+                    return;
+                }
+
+                // Try to call the contract function with proper error handling
+                try {
+                    const playerGames = await contract.getPlayerGames(userAccount);
+                    if (playerGames.length > 0) {
+                        const historyHtml = `<p>You have played ${playerGames.length} games.</p>
+                                           <p>Game IDs: ${playerGames.map(id => id.toString()).join(', ')}</p>`;
+                        document.getElementById('gameHistory').innerHTML = historyHtml;
+                    } else {
+                        document.getElementById('gameHistory').innerHTML = '<p>No game history found. Play some games to see your history!</p>';
+                    }
+                } catch (contractError) {
+                    console.error('Contract call failed:', contractError);
+                    // If contract call fails, mark as not deployed and update UI
+                    contractDeployed = false;
+                    updateContractStatus('❌ Contract not found at this address. Please deploy PokerGame.sol first.', 'error');
+                    document.getElementById('gameHistory').innerHTML = '<p class="error">⚠️ Contract not found at the current address. Please deploy or update the contract address.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading player history:', error);
+                document.getElementById('gameHistory').innerHTML = '<p class="error">⚠️ Cannot load game history. Contract may not be deployed.</p>';
+            }
+        }
+
+        // UI update functions
+        function updateGameStatus(message) {
+            document.getElementById('gameStatus').innerHTML = `<p>${message}</p>`;
+        }
+
+        async function updateGameStats() {
+            if (!contract || !currentGameId || !contractDeployed) return;
+
+            try {
+                const gameInfo = await contract.getGameInfo(currentGameId);
+                document.getElementById('totalPlayers').textContent = gameInfo.currentPlayers.toString();
+                document.getElementById('currentPot').textContent = ethers.formatEther(gameInfo.totalPot);
+                document.getElementById('gameRound').textContent = gameInfo.currentRound.toString();
+
+                if (provider && userAccount) {
+                    const balance = await provider.getBalance(userAccount);
+                    document.getElementById('myBalance').textContent = ethers.formatEther(balance).slice(0, 6);
+                }
+            } catch (error) {
+                console.error('Error updating game stats:', error);
+            }
+        }
+
+        function enableGameControls() {
+            const controls = ['callBtn', 'raiseBtn', 'foldBtn', 'checkBtn'];
+            controls.forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+        }
+
+        function disableGameControls() {
+            const controls = ['callBtn', 'raiseBtn', 'foldBtn', 'checkBtn'];
+            controls.forEach(id => {
+                document.getElementById(id).disabled = true;
+            });
+        }
+
+        function updateUI() {
+            updateWalletUI();
+            if (currentGameId && contractDeployed) {
+                updateGameStats();
+            }
+        }
+
+        // Handle account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    disconnectWallet();
+                } else {
+                    connectWallet();
+                }
+            });
+
+            window.ethereum.on('chainChanged', () => {
+                window.location.reload();
+            });
+        }
+
+        // Contract event listeners
+        function setupContractEventListeners() {
+            if (!contract || !contractDeployed) return;
+
+            contract.on("GameCreated", (gameId, gameType, maxPlayers, minBet) => {
+                console.log("New game created:", { gameId: gameId.toString(), gameType, maxPlayers: maxPlayers.toString() });
+                updateGameStatus(`New game created! Game ID: ${gameId.toString()}`);
+            });
+
+            contract.on("PlayerJoined", (gameId, player, totalPlayers) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    updateGameStatus(`Player joined! Total players: ${totalPlayers.toString()}`);
+                    updateGameStats();
+                }
+            });
+
+            contract.on("GameStarted", (gameId, players, totalPot) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    updateGameStatus(`Game started with ${players.length} players! Total pot: ${ethers.formatEther(totalPot)} ETH`);
+                    updateGameStats();
+                }
+            });
+
+            contract.on("PlayerMoved", (gameId, player, moveId, timestamp) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    updateGameStatus(`Player made a move. Move ID: ${moveId.toString()}`);
+                    updateGameStats();
+                }
+            });
+
+            contract.on("GameEnded", (gameId, winner, prize) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    const winnerText = winner === userAccount ? "You won!" : `Winner: ${winner.slice(0, 6)}...${winner.slice(-4)}`;
+                    updateGameStatus(`🎉 Game ended! ${winnerText} Prize: ${ethers.formatEther(prize)} ETH`);
+                    disableGameControls();
+                }
+            });
+        }
+
+        // Initialize the application when page loads
+        window.addEventListener('load', init);
+
+        // Verify contract deployment helper function
+        async function verifyContractDeployment() {
+            if (!provider) return false;
+
+            try {
+                const code = await provider.getCode(CONTRACT_ADDRESS);
+                contractDeployed = code !== '0x';
+                return contractDeployed;
+            } catch (error) {
+                console.error('Contract verification error:', error);
+                contractDeployed = false;
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>

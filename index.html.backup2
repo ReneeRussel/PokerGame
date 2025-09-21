@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="description" content="Privacy Poker Game - Confidential card game using FHE encryption" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <title>Privacy Poker Game - FHE Encrypted Card Game</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid #475569;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ef4444, #f97316, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-section {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-section {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .player-area {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .cards {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(145deg, #1e293b, #334155);
+            border: 2px solid #475569;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .card.selected {
+            border-color: #ef4444;
+            background: linear-gradient(145deg, #ef4444, #dc2626);
+        }
+
+        .button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .button:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            background: #374151;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-display {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .poker-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .poker-option {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .poker-option:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .poker-option.selected {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.5);
+            color: #f8fafc;
+            font-size: 1rem;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #ef4444;
+            margin: 0.5rem 0;
+        }
+
+        .success {
+            color: #10b981;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🃏 Privacy Poker Game</h1>
+            <p>Confidential card game using FHE encryption technology</p>
+            <div id="networkStatus" class="status-display">
+                <strong>Network:</strong> <span id="currentNetwork">Not Connected</span>
+            </div>
+        </header>
+
+        <!-- Wallet Connection Section -->
+        <section class="wallet-section">
+            <h2>🔐 Wallet Connection</h2>
+            <div id="walletStatus">
+                <button id="connectWallet" class="button">Connect Wallet</button>
+                <div id="walletInfo" class="hidden">
+                    <p><strong>Address:</strong> <span id="walletAddress"></span></p>
+                    <button id="disconnectWallet" class="button">Disconnect</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Selection Section -->
+        <section class="game-section">
+            <h2>🎮 Game Options</h2>
+            <div class="poker-options" id="gameOptions">
+                <div class="poker-option" data-game="0" data-name="Texas Hold'em">
+                    <h3>♠️ Texas Hold'em</h3>
+                    <p>Classic poker with 2 hole cards and 5 community cards</p>
+                </div>
+                <div class="poker-option" data-game="1" data-name="Five Card Draw">
+                    <h3>🃏 Five Card Draw</h3>
+                    <p>Traditional poker with 5 private cards</p>
+                </div>
+                <div class="poker-option" data-game="2" data-name="Omaha Hold'em">
+                    <h3>♣️ Omaha Hold'em</h3>
+                    <p>4 hole cards, must use exactly 2</p>
+                </div>
+                <div class="poker-option" data-game="3" data-name="Seven Card Stud">
+                    <h3>♦️ Seven Card Stud</h3>
+                    <p>7 cards dealt, best 5-card hand wins</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Board Section -->
+        <section class="game-section" id="gameBoard" style="display: none;">
+            <h2>🎯 Game Board</h2>
+
+            <div class="game-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalPlayers">0</div>
+                    <div>Players</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="currentPot">0</div>
+                    <div>Pot (ETH)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="gameRound">1</div>
+                    <div>Round</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="myBalance">0</div>
+                    <div>Balance</div>
+                </div>
+            </div>
+
+            <div class="game-board">
+                <div class="player-area">
+                    <h3>Your Hand</h3>
+                    <div class="cards" id="playerCards">
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="betAmount">Bet Amount (ETH):</label>
+                        <input type="number" id="betAmount" step="0.01" min="0.01" placeholder="0.1" value="0.1">
+                    </div>
+                    <div>
+                        <button id="callBtn" class="button">Call</button>
+                        <button id="raiseBtn" class="button">Raise</button>
+                        <button id="foldBtn" class="button">Fold</button>
+                        <button id="checkBtn" class="button">Check</button>
+                    </div>
+                </div>
+
+                <div class="player-area">
+                    <h3>Community Cards</h3>
+                    <div class="cards" id="communityCards">
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                        <div class="card">🂠</div>
+                    </div>
+                    <div class="status-display" id="gameStatus">
+                        <p>Select a game type and join to start playing!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="maxPlayers">Maximum Players:</label>
+                <select id="maxPlayers">
+                    <option value="2">2 Players</option>
+                    <option value="4" selected>4 Players</option>
+                    <option value="6">6 Players</option>
+                    <option value="8">8 Players</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <button id="createGame" class="button">Create New Game</button>
+                <button id="joinGame" class="button">Join Existing Game</button>
+                <button id="leaveGame" class="button">Leave Game</button>
+            </div>
+        </section>
+
+        <!-- Game History Section -->
+        <section class="game-section">
+            <h2>📊 Game History</h2>
+            <div id="gameHistory" class="status-display">
+                <p>Connect your wallet and play games to see your history!</p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Load ethers.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+
+    <script>
+        // Contract configuration - Real Zama testnet contract address
+        const CONTRACT_ADDRESS = "0x10216ed6A2C0D03fAc3177398df8B23bc1A11dDC";
+        const CONTRACT_ABI = [
+            "function createGame(uint8 gameType, uint256 maxPlayers, uint256 minBet) external returns (uint256)",
+            "function joinGame(uint256 gameId, bool wantsToJoin) external payable",
+            "function makeMove(uint256 gameId, bool call, bool raise, bool fold) external payable",
+            "function revealCards(uint256 gameId, bool[] memory cards) external",
+            "function getGameInfo(uint256 gameId) external view returns (tuple(uint256 gameId, uint256 maxPlayers, uint256 currentPlayers, uint256 totalPot, uint256 minBet, uint8 gameType, bool isActive, bool hasStarted, address[] players, uint256 currentRound, uint256 timestamp))",
+            "function getPlayerCards(uint256 gameId, address player) external view returns (bool[])",
+            "function getTotalGames() external view returns (uint256)",
+            "function getPlayerGames(address player) external view returns (uint256[])",
+            "event GameCreated(uint256 indexed gameId, uint8 gameType, uint256 maxPlayers, uint256 minBet)",
+            "event PlayerJoined(uint256 indexed gameId, address indexed player, uint256 totalPlayers)",
+            "event GameStarted(uint256 indexed gameId, address[] players, uint256 totalPot)",
+            "event PlayerMoved(uint256 indexed gameId, address indexed player, uint256 moveId, uint256 timestamp)",
+            "event GameEnded(uint256 indexed gameId, address indexed winner, uint256 prize)"
+        ];
+
+        // Global variables
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let userAccount = null;
+        let currentGameId = null;
+        let selectedGameType = null;
+
+        // Initialize the application
+        async function init() {
+            console.log("Initializing Privacy Poker Game...");
+            setupEventListeners();
+            updateUI();
+            await checkForExistingGames();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('connectWallet').addEventListener('click', connectWallet);
+            document.getElementById('disconnectWallet').addEventListener('click', disconnectWallet);
+
+            // Game option selection
+            document.querySelectorAll('.poker-option').forEach(option => {
+                option.addEventListener('click', selectGameType);
+            });
+
+            // Game controls
+            document.getElementById('createGame').addEventListener('click', createNewGame);
+            document.getElementById('joinGame').addEventListener('click', joinExistingGame);
+            document.getElementById('leaveGame').addEventListener('click', leaveGame);
+
+            // Poker actions
+            document.getElementById('callBtn').addEventListener('click', () => makeMove(true, false, false));
+            document.getElementById('raiseBtn').addEventListener('click', () => makeMove(false, true, false));
+            document.getElementById('foldBtn').addEventListener('click', () => makeMove(false, false, true));
+            document.getElementById('checkBtn').addEventListener('click', () => makeMove(true, false, false));
+        }
+
+        // Wallet connection functions
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask to use this application!');
+                    return;
+                }
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                userAccount = await signer.getAddress();
+
+                // Initialize contract
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                // Check network
+                const network = await provider.getNetwork();
+                document.getElementById('currentNetwork').textContent = `${network.name} (Chain ID: ${network.chainId})`;
+
+                updateWalletUI();
+                await loadPlayerHistory();
+                console.log('Wallet connected:', userAccount);
+                updateGameStatus('Wallet connected successfully! Select a game type to start playing.');
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                alert('Failed to connect wallet. Please try again.');
+            }
+        }
+
+        async function disconnectWallet() {
+            provider = null;
+            signer = null;
+            contract = null;
+            userAccount = null;
+            currentGameId = null;
+            selectedGameType = null;
+            updateWalletUI();
+            document.getElementById('currentNetwork').textContent = 'Not Connected';
+            document.getElementById('gameBoard').style.display = 'none';
+            updateGameStatus('Wallet disconnected.');
+        }
+
+        function updateWalletUI() {
+            const connectBtn = document.getElementById('connectWallet');
+            const walletInfo = document.getElementById('walletInfo');
+            const walletAddress = document.getElementById('walletAddress');
+
+            if (userAccount) {
+                connectBtn.classList.add('hidden');
+                walletInfo.classList.remove('hidden');
+                walletAddress.textContent = `${userAccount.slice(0, 6)}...${userAccount.slice(-4)}`;
+            } else {
+                connectBtn.classList.remove('hidden');
+                walletInfo.classList.add('hidden');
+            }
+        }
+
+        // Game selection functions
+        function selectGameType(event) {
+            document.querySelectorAll('.poker-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            selectedGameType = {
+                id: parseInt(event.currentTarget.dataset.game),
+                name: event.currentTarget.dataset.name
+            };
+
+            document.getElementById('gameBoard').style.display = 'block';
+            updateGameStatus(`Selected: ${selectedGameType.name}. Create a new game or join an existing one.`);
+        }
+
+        // Game functions
+        async function createNewGame() {
+            if (!contract) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            if (selectedGameType === null) {
+                alert('Please select a game type first!');
+                return;
+            }
+
+            try {
+                updateGameStatus('Creating new game...');
+
+                const maxPlayers = document.getElementById('maxPlayers').value;
+                const minBet = document.getElementById('betAmount').value || "0.1";
+
+                const tx = await contract.createGame(
+                    selectedGameType.id,
+                    parseInt(maxPlayers),
+                    ethers.parseEther(minBet)
+                );
+
+                const receipt = await tx.wait();
+
+                // Get the game ID from the event
+                const gameCreatedEvent = receipt.logs.find(log =>
+                    log.topics[0] === ethers.id("GameCreated(uint256,uint8,uint256,uint256)")
+                );
+
+                if (gameCreatedEvent) {
+                    currentGameId = parseInt(gameCreatedEvent.topics[1], 16);
+                    updateGameStatus(`Game created successfully! Game ID: ${currentGameId}. Click "Join Game" to join.`);
+                    await updateGameStats();
+                }
+            } catch (error) {
+                console.error('Error creating game:', error);
+                updateGameStatus('Failed to create game. Please check your network connection and try again.');
+            }
+        }
+
+        async function joinExistingGame() {
+            if (!contract) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            if (!currentGameId) {
+                // Try to join the most recent game
+                try {
+                    const totalGames = await contract.getTotalGames();
+                    currentGameId = totalGames.toNumber();
+                } catch (error) {
+                    alert('No games available. Please create a new game first!');
+                    return;
+                }
+            }
+
+            try {
+                updateGameStatus('Joining game...');
+
+                const betAmount = document.getElementById('betAmount').value || "0.1";
+
+                // Send plaintext boolean (true = wants to join) - contract will encrypt internally
+                const tx = await contract.joinGame(currentGameId, true, {
+                    value: ethers.parseEther(betAmount)
+                });
+
+                await tx.wait();
+                updateGameStatus('Successfully joined the game! Waiting for other players...');
+                await updateGameStats();
+                enableGameControls();
+            } catch (error) {
+                console.error('Error joining game:', error);
+                updateGameStatus('Failed to join game. The game may be full or already started.');
+            }
+        }
+
+        async function makeMove(call, raise, fold) {
+            if (!contract || !currentGameId) {
+                alert('Please join a game first!');
+                return;
+            }
+
+            try {
+                const actionText = call ? 'call' : raise ? 'raise' : fold ? 'fold' : 'check';
+                updateGameStatus(`Making move: ${actionText}...`);
+
+                let value = 0;
+                if (raise) {
+                    const raiseAmount = document.getElementById('betAmount').value || "0.1";
+                    value = ethers.parseEther(raiseAmount);
+                }
+
+                // Send plaintext booleans for moves - contract will encrypt internally using FHE.asBool()
+                const tx = await contract.makeMove(currentGameId, call, raise, fold, {
+                    value: value
+                });
+
+                await tx.wait();
+                updateGameStatus(`Move completed: ${actionText}`);
+                await updateGameStats();
+
+                if (fold) {
+                    updateGameStatus('You folded. Waiting for round to complete...');
+                    disableGameControls();
+                }
+            } catch (error) {
+                console.error('Error making move:', error);
+                updateGameStatus(`Failed to make move: ${error.message}`);
+            }
+        }
+
+        async function leaveGame() {
+            currentGameId = null;
+            selectedGameType = null;
+            document.getElementById('gameBoard').style.display = 'none';
+            document.querySelectorAll('.poker-option').forEach(opt => opt.classList.remove('selected'));
+            disableGameControls();
+            updateGameStatus('Left the game.');
+        }
+
+        // Blockchain interaction functions
+        async function checkForExistingGames() {
+            if (!contract) return;
+
+            try {
+                const totalGames = await contract.getTotalGames();
+                if (totalGames > 0) {
+                    updateGameStatus(`Found ${totalGames} games on the blockchain. Select a game type to join or create new game.`);
+                }
+            } catch (error) {
+                console.error('Error checking for games:', error);
+            }
+        }
+
+async function loadPlayerHistory() {            if (!contract || !userAccount) return;            try {                const playerGames = await contract.getPlayerGames(userAccount);                if (playerGames.length > 0) {                    const historyHtml = `<p>You have played ${playerGames.length} games.</p>                                       <p>Game IDs: ${playerGames.map(id => id.toString()).join(", ")}</p>`;                    document.getElementById("gameHistory").innerHTML = historyHtml;                } else {                    document.getElementById("gameHistory").innerHTML = "<p>No game history found. Play some games to see your history!</p>";                }            } catch (error) {                console.error("Error loading player history:", error);                document.getElementById("gameHistory").innerHTML = "<p class="error">⚠️ Contract not deployed or network not supported. Please deploy the PokerGame contract first.</p>";            }        }
+        }
+
+        // UI update functions
+        function updateGameStatus(message) {
+            document.getElementById('gameStatus').innerHTML = `<p>${message}</p>`;
+        }
+
+        async function updateGameStats() {
+            if (!contract || !currentGameId) return;
+
+            try {
+                const gameInfo = await contract.getGameInfo(currentGameId);
+                document.getElementById('totalPlayers').textContent = gameInfo.currentPlayers.toString();
+                document.getElementById('currentPot').textContent = ethers.formatEther(gameInfo.totalPot);
+                document.getElementById('gameRound').textContent = gameInfo.currentRound.toString();
+
+                if (provider && userAccount) {
+                    const balance = await provider.getBalance(userAccount);
+                    document.getElementById('myBalance').textContent = ethers.formatEther(balance).slice(0, 6);
+                }
+            } catch (error) {
+                console.error('Error updating game stats:', error);
+            }
+        }
+
+        function enableGameControls() {
+            const controls = ['callBtn', 'raiseBtn', 'foldBtn', 'checkBtn'];
+            controls.forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+        }
+
+        function disableGameControls() {
+            const controls = ['callBtn', 'raiseBtn', 'foldBtn', 'checkBtn'];
+            controls.forEach(id => {
+                document.getElementById(id).disabled = true;
+            });
+        }
+
+        function updateUI() {
+            updateWalletUI();
+            if (currentGameId) {
+                updateGameStats();
+            }
+        }
+
+        // Handle account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    disconnectWallet();
+                } else {
+                    connectWallet();
+                }
+            });
+
+            window.ethereum.on('chainChanged', () => {
+                window.location.reload();
+            });
+        }
+
+        // Contract event listeners
+        function setupContractEventListeners() {
+            if (!contract) return;
+
+            contract.on("GameCreated", (gameId, gameType, maxPlayers, minBet) => {
+                console.log("New game created:", { gameId: gameId.toString(), gameType, maxPlayers: maxPlayers.toString() });
+                updateGameStatus(`New game created! Game ID: ${gameId.toString()}`);
+            });
+
+            contract.on("PlayerJoined", (gameId, player, totalPlayers) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    updateGameStatus(`Player joined! Total players: ${totalPlayers.toString()}`);
+                    updateGameStats();
+                }
+            });
+
+            contract.on("GameStarted", (gameId, players, totalPot) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    updateGameStatus(`Game started with ${players.length} players! Total pot: ${ethers.formatEther(totalPot)} ETH`);
+                    updateGameStats();
+                }
+            });
+
+            contract.on("PlayerMoved", (gameId, player, moveId, timestamp) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    updateGameStatus(`Player made a move. Move ID: ${moveId.toString()}`);
+                    updateGameStats();
+                }
+            });
+
+            contract.on("GameEnded", (gameId, winner, prize) => {
+                if (gameId.toString() === currentGameId?.toString()) {
+                    const winnerText = winner === userAccount ? "You won!" : `Winner: ${winner.slice(0, 6)}...${winner.slice(-4)}`;
+                    updateGameStatus(`🎉 Game ended! ${winnerText} Prize: ${ethers.formatEther(prize)} ETH`);
+                    disableGameControls();
+                }
+            });
+        }
+
+        // Initialize the application when page loads
+        window.addEventListener('load', init);
+
+        // Setup contract events after wallet connection
+        window.addEventListener('load', () => {
+            // Re-setup event listeners whenever contract is initialized
+            const originalConnectWallet = connectWallet;
+            connectWallet = async function() {
+                await originalConnectWallet();
+                if (contract) {
+                    setupContractEventListeners();
+                }
+            };
+        });
+    </script>
+</body>
+</html>
